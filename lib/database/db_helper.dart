@@ -30,7 +30,7 @@ class DbHelper {
     await db.execute(_paciente);
     await db.execute(_gerenciarEstoque);
     await db.execute(_consulta);
-   // await db.execute(_consulta_produto);
+    await db.execute(_consultaProduto);
     await db.execute(_tipoPaciente);
     await db.execute(_tipoProduto);
   }
