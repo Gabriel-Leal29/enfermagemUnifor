@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_enfermagem_desktop/bases/configuracao_base.dart';
+import 'package:projeto_enfermagem_desktop/pages/produtos_page.dart';
+
 import 'package:projeto_enfermagem_desktop/theme/theme.dart';
 
 import '../bases/page_base.dart';
@@ -24,6 +26,9 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
         body: Text("Exemplo page 2"),
       ),
     ),
+    Center(
+      child: ProdutosPage(),
+    )
   ];
 
   int _selectedIndex = 0;
@@ -39,6 +44,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
           //TODO: passa o nome do menu, icone e a posição na lista 0,1,2,3...
           _buildMenuItem("Título 1", Icons.dashboard_customize_rounded, 0),
           _buildMenuItem("Título 2", Icons.dashboard_customize_rounded, 1),
+          _buildMenuItem("Produtos", Icons.shopping_cart_checkout_rounded, 2),
         ],
       ),
       conteudo: _opcoesMenuLateral[_selectedIndex]
