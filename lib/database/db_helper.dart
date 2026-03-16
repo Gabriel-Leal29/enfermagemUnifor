@@ -18,7 +18,7 @@ class DbHelper {
 
   _initDatabase() async {
     return await openDatabase(
-      join(await getDatabasesPath(), 'nfermagem.db'),
+      join(await getDatabasesPath(), 'enfermagem.db'),
       version: 1,
       onCreate: _onCreate,
     );
