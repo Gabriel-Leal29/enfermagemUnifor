@@ -1,3 +1,4 @@
+
 // padrão singleton
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
