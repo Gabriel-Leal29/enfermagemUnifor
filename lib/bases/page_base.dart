@@ -24,7 +24,7 @@ class _PageBaseState extends State<PageBase>{
   Widget _buildGeral() => Container(
         color: cinzaFundo,
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(16, 30, 16, 30),
           child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
             widget.body,
           ]),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
+import '../theme/theme.dart';
+
 class ConfiguracaoPage extends StatefulWidget{
   const ConfiguracaoPage({super.key});
   
@@ -17,44 +19,71 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   final TextEditingController _cnpjController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) => Container(
-    color: Colors.white,
-    child: Column(
-      children: [
-        Text("Configurações"),
-        Padding(
-          padding: EdgeInsetsGeometry.all(16),
-          child: Column(
-            children: [
-              CampoTextoWidget(
-                label: "Nome da Instituição",
-                controller: _instituicaoController,
-              ),
-              CampoTextoWidget(
-                label: "CNPJ",
-                controller: _cnpjController,
-                inputFormatter: [
-                  cnpjMask,
+  Widget build(BuildContext context) => SizedBox(
+    width: 800,
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              color: cinzaFundo,
+              child: Text("Configurações", style: textStyleBlackTituloPage)
+            ),
+
+            const SizedBox(height: 26),
+
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
-                hintText: "00.000.000/0000-00",
-                validator: validarCnpj,
               ),
-              CampoTextoWidget(
-                label: "Endereço",
-                controller: _enderecoController,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Dados das Instituição", style: textStyleBlackTituloPage),
+                        const SizedBox(height: 12),
+                        CampoTextoWidget(
+                          label: "Nome da Instituição",
+                          controller: _instituicaoController,
+                        ),
+                        CampoTextoWidget(
+                          label: "CNPJ",
+                          controller: _cnpjController,
+                          inputFormatter: [
+                            cnpjMask,
+                          ],
+                          hintText: "00.000.000/0000-00",
+                          validator: validarCnpj,
+                        ),
+                        CampoTextoWidget(
+                          label: "Endereço",
+                          controller: _enderecoController,
+                        ),
+                        CampoTextoWidget(
+                          label: "Telefone",
+                          controller: _telefoneController,
+                          hintText: "(00) 00000-0000",
+                          inputFormatter: [
+                            telefoneMask,
+                          ],
+                          validator: validarTelefone,
+                        ),
+                      ],
+                    ),
               ),
-              CampoTextoWidget(
-                label: "Telefone",
-                controller: _telefoneController,
-                inputFormatter: [
-                  telefoneMask,
-                ],
-                validator: validarTelefone,
-              ),
-            ],
-          )
-        ),
-      ],
+            )
+          ],
+      ),
     ),
   );
 

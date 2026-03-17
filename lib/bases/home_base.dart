@@ -53,12 +53,12 @@ class _HomeBaseState extends State<HomeBase>{
   );
 
   Widget _buildHeader() => Container(
-    height: 70,
+    height: 85,
     padding: const EdgeInsets.symmetric(horizontal: 24),
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       color: Colors.white,
       border: Border(
-        bottom: BorderSide(color: Color(0xFFE5E7EB)),
+        bottom: BorderSide(color: cinzaFundo),
       ),
     ),
     child: Row(
@@ -69,7 +69,7 @@ class _HomeBaseState extends State<HomeBase>{
           children: [
             Text(
               "Sistema de Enfermagem",
-              style: textStyleBlack,
+              style: textStyleBlackTituloHeader,
             ),
             Text(
               "UNIFOR-MG · Gestão de Atendimentos",
