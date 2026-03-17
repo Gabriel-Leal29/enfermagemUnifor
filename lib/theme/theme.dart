@@ -34,4 +34,5 @@ const textStyleGrayTitle = TextStyle(fontSize: 19, color: Colors.white, fontWeig
 const textStyleSubTituloAndMenuItem = TextStyle(color: menuItemNaoSelecionado, fontWeight: FontWeight.w400, fontSize: 14);
 const textStyleMenuItemSelecionado = TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14);
 const textStyleBlack = TextStyle(fontSize: 19, color: Colors.black, fontWeight: FontWeight.bold);
+const textStyleBlackLabel =  TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold);
 const textStyleSubTituloHeader = TextStyle(fontSize: 12, color: Color(0xFF757575));

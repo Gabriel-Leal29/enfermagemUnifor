@@ -1,109 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_enfermagem_desktop/bases/configuracao_base.dart';
-import 'package:projeto_enfermagem_desktop/theme/theme.dart';
-
-import '../bases/page_base.dart';
+import 'package:flutter/services.dart';
+import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
 class ConfiguracaoPage extends StatefulWidget{
   const ConfiguracaoPage({super.key});
-
+  
   @override
   State<StatefulWidget> createState() => _ConfiguracaoPageState();
+
 }
 
 class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
-  // lista dos widgets que vai ser usados na barra lateral
-  List<Widget> get _opcoesMenuLateral => [
-    Center(
-      child: PageBase(
-        body: Text("Exemplo page 1"),
-      ),
-    ),
-    Center(
-      child: PageBase(
-        body: Text("Exemplo page 2"),
-      ),
-    ),
-  ];
-
-  int _selectedIndex = 0;
-  final String titulo = "UNIFOR-MG";
-  final String subTitulo = "ENFERMAGEM";
+  final TextEditingController _instituicaoController = TextEditingController();
+  final TextEditingController _enderecoController = TextEditingController();
+  final TextEditingController _telefoneController = TextEditingController();
+  final TextEditingController _cnpjController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) => ConfiguracaoBase(
-      barraLateral: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-        children: [
-          _buildBarraLateralHeader(titulo, subTitulo, Icons.favorite),
-          //TODO: passa o nome do menu, icone e a posição na lista 0,1,2,3...
-          _buildMenuItem("Título 1", Icons.dashboard_customize_rounded, 0),
-          _buildMenuItem("Título 2", Icons.dashboard_customize_rounded, 1),
-        ],
+  Widget build(BuildContext context) => Column(
+    children: [
+      Text("Configurações"),
+      SizedBox(
+        child: Column(
+          children: [
+            CampoTextoWidget(
+              label: "Nome da Instituição",
+              controller: _instituicaoController,
+            ),
+            CampoTextoWidget(
+              label: "CNPJ",
+              controller: _cnpjController,
+              inputFormatter: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              hintText: "00.000.000/0000-00",
+              validator: validarCnpj,
+            ),
+            CampoTextoWidget(
+              label: "Endereço",
+              controller: _enderecoController,
+            ),
+            CampoTextoWidget(
+              label: "Telefone",
+              controller: _telefoneController,
+              inputFormatter: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              validator: validarTelefone,
+            ),
+          ],
+        )
       ),
-      conteudo: _opcoesMenuLateral[_selectedIndex]
+    ],
   );
 
-  Widget _buildBarraLateralHeader(String titulo, String subTitulo, IconData icone) => Container(
-    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-    decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: Colors.transparent)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: azulUnifor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(icone, color: amareloUnifor, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(titulo, style: textStyleGrayTitle),
-              Text(subTitulo, style:  textStyleSubTituloAndMenuItem),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
+  // validador de CNPJ
+  String? validarCnpj(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final regex = RegExp(r'^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$');
+    if (!regex.hasMatch(value)) {
+      return "CNPJ inválido";
+    }
+    return null;
+  }
 
-  Widget _buildMenuItem(String title, IconData icon, int index) {
-    final bool isSelected = _selectedIndex == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: () => setState(() => _selectedIndex = index),
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF243B5A) // fundo do item selecionado
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected ? Colors.white : menuItemNaoSelecionado,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: isSelected? textStyleMenuItemSelecionado : textStyleSubTituloAndMenuItem,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  //validor de telefone
+  String? validarTelefone(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final regex = RegExp(r'^\(\d{2}\)\s\d{5}-\d{4}$');
+
+    if (!regex.hasMatch(value)) {
+      return "Telefone inválido";
+    }
+    return null;
   }
 }

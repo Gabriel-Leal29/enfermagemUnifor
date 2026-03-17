@@ -13,10 +13,14 @@ class DbHelper {
   get database async {
     if (_database != null) return _database;
 
-    return await _initDatabase();
+    _database = await _initDatabase(); // guarda a instancia do banco
+    return _database!;
   }
 
-  _initDatabase() async {
+  Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'enfermagem.db');
+    print("CAMINHO DO DB: $path");
+
     return await openDatabase(
       join(await getDatabasesPath(), 'enfermagem.db'),
       version: 1,
@@ -24,20 +28,21 @@ class DbHelper {
     );
   }
 
-  _onCreate(db, versao) async {
+  void _onCreate(db, versao) async {
     await db.execute(_fornecedor);
     await db.execute(_produto);
     await db.execute(_paciente);
     await db.execute(_gerenciarEstoque);
-    await db.execute(_consulta);
-    await db.execute(_consultaProduto);
+    //await db.execute(_consulta);
+    //await db.execute(_consultaProduto);
     await db.execute(_tipoPaciente);
     await db.execute(_tipoProduto);
+    await db.execute(_config);
   }
 
   String get _fornecedor => '''
   CREATE TABLE fornecedor (
-    id INT PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     cnpj TEXT
   )
@@ -81,23 +86,36 @@ class DbHelper {
   CREATE TABLE tipoProduto (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     descricao TEXT NOT NULL UNIQUE
+    )
 ''';
 
   String get _tipoPaciente => '''
   CREATE TABLE TipoPaciente (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     descricao TEXT NOT NULL UNIQUE
+    )
 ''';
 
-  String get _consulta => '''
-  CREATE TABLE consulta(
-   
-  )
-''';
+  //TODO: (gabriel_leal29) Vou fazer dps essas tabelas
+//   String get _consulta => '''
+//   CREATE TABLE consulta(
+//
+//   )
+// ''';
+//
+//   String get _consultaProduto => '''
+//   CREATE TABLE consultaProduto(
+//
+//   )
+// ''';
 
-  String get _consultaProduto => '''
-  CREATE TABLE consultaProduto(
-  
-  )
+  String get _config => '''
+  CREATE TABLE config (
+    nome_instituicao TEXT NOT NULL,
+    cnpj TEXT,
+    endereco TEXT,
+    telefone TEXT,
+    impressora TEXT
+    )
 ''';
 }

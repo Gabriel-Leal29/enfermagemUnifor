@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:projeto_enfermagem_desktop/theme/theme.dart';
 
-class ConfiguracaoBase extends StatefulWidget{
-  const ConfiguracaoBase({
+class HomeBase extends StatefulWidget{
+  const HomeBase({
     required this.barraLateral,
     required this.conteudo,
     super.key
@@ -13,10 +12,10 @@ class ConfiguracaoBase extends StatefulWidget{
   final Widget conteudo;
 
   @override
-  State<StatefulWidget> createState() => _ConfiguracaoBaseState();
+  State<StatefulWidget> createState() => _HomeBaseState();
 }
 
-class _ConfiguracaoBaseState extends State<ConfiguracaoBase>{
+class _HomeBaseState extends State<HomeBase>{
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: cinzaFundo,
