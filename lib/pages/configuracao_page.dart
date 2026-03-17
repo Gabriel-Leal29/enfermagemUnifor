@@ -17,41 +17,45 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   final TextEditingController _cnpjController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Text("Configurações"),
-      SizedBox(
-        child: Column(
-          children: [
-            CampoTextoWidget(
-              label: "Nome da Instituição",
-              controller: _instituicaoController,
-            ),
-            CampoTextoWidget(
-              label: "CNPJ",
-              controller: _cnpjController,
-              inputFormatter: [
-                cnpjMask,
-              ],
-              hintText: "00.000.000/0000-00",
-              validator: validarCnpj,
-            ),
-            CampoTextoWidget(
-              label: "Endereço",
-              controller: _enderecoController,
-            ),
-            CampoTextoWidget(
-              label: "Telefone",
-              controller: _telefoneController,
-              inputFormatter: [
-                telefoneMask,
-              ],
-              validator: validarTelefone,
-            ),
-          ],
-        )
-      ),
-    ],
+  Widget build(BuildContext context) => Container(
+    color: Colors.white,
+    child: Column(
+      children: [
+        Text("Configurações"),
+        Padding(
+          padding: EdgeInsetsGeometry.all(16),
+          child: Column(
+            children: [
+              CampoTextoWidget(
+                label: "Nome da Instituição",
+                controller: _instituicaoController,
+              ),
+              CampoTextoWidget(
+                label: "CNPJ",
+                controller: _cnpjController,
+                inputFormatter: [
+                  cnpjMask,
+                ],
+                hintText: "00.000.000/0000-00",
+                validator: validarCnpj,
+              ),
+              CampoTextoWidget(
+                label: "Endereço",
+                controller: _enderecoController,
+              ),
+              CampoTextoWidget(
+                label: "Telefone",
+                controller: _telefoneController,
+                inputFormatter: [
+                  telefoneMask,
+                ],
+                validator: validarTelefone,
+              ),
+            ],
+          )
+        ),
+      ],
+    ),
   );
 
   // validador de CNPJ

@@ -3,7 +3,6 @@ import 'package:projeto_enfermagem_desktop/bases/home_base.dart';
 import 'package:projeto_enfermagem_desktop/theme/theme.dart';
 
 import '../bases/page_base.dart';
-import 'configuracao_page.dart';
 
 class Home extends StatefulWidget{
   const Home({super.key});
@@ -25,9 +24,9 @@ class _HomeState extends State<Home>{
         body: Text("Exemplo page 2"),
       ),
     ),
-    Center(
-      child: PageBase(body: ConfiguracaoPage())
-    ),
+    // Center(
+    //   child: PageBase(body: ConfiguracaoPage())
+    // ),
   ];
 
   int _selectedIndex = 0;
@@ -43,7 +42,7 @@ class _HomeState extends State<Home>{
           //TODO: passa o nome do menu, icone e a posição na lista 0,1,2,3...
           _buildMenuItem("Título 1", Icons.dashboard_customize_rounded, 0),
           _buildMenuItem("Título 2", Icons.dashboard_customize_rounded, 1),
-          _buildMenuItem("Configurações", Icons.settings_rounded, 2),
+          //_buildMenuItem("Configurações", Icons.settings_rounded, 2),
         ],
       ),
       conteudo: _opcoesMenuLateral[_selectedIndex]

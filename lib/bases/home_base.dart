@@ -36,18 +36,63 @@ class _HomeBaseState extends State<HomeBase>{
 
             // lado direito
             Expanded(
-              child: Stack(
+              child: Column(
                 children: [
-                  Positioned.fill(
-                      child: SingleChildScrollView(
-                        child: widget.conteudo
-                      )
-                  ),
+                  _buildHeader(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: widget.conteudo,
+                    ),
+                  )
                 ],
-              )
+              ),
             )
           ],
         )
+    ),
+  );
+
+  Widget _buildHeader() => Container(
+    height: 70,
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      border: Border(
+        bottom: BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+    ),
+    child: Row(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Sistema de Enfermagem",
+              style: textStyleBlack,
+            ),
+            Text(
+              "UNIFOR-MG · Gestão de Atendimentos",
+              style: textStyleSubTituloHeader,
+            ),
+          ],
+        ),
+
+        const Spacer(),
+
+        IconButton(
+          icon: const Icon(Icons.notifications_none),
+          onPressed: () {},
+        ),
+
+        const SizedBox(width: 8),
+
+        const CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.blueGrey,
+          child: Text("E", style: TextStyle(color: Colors.white)),
+        ),
+      ],
     ),
   );
 }
