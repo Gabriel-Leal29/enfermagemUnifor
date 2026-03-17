@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
 class ConfiguracaoPage extends StatefulWidget{
@@ -31,7 +31,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
               label: "CNPJ",
               controller: _cnpjController,
               inputFormatter: [
-                FilteringTextInputFormatter.digitsOnly,
+                cnpjMask,
               ],
               hintText: "00.000.000/0000-00",
               validator: validarCnpj,
@@ -44,7 +44,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
               label: "Telefone",
               controller: _telefoneController,
               inputFormatter: [
-                FilteringTextInputFormatter.digitsOnly,
+                telefoneMask,
               ],
               validator: validarTelefone,
             ),
@@ -64,7 +64,13 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     return null;
   }
 
-  //validor de telefone
+  // mascara de CNPJ
+  var cnpjMask = MaskTextInputFormatter(
+    mask: '##.###.###/####-##',
+    filter: { "#": RegExp(r'[0-9]') },
+  );
+
+  // validor de telefone
   String? validarTelefone(String? value) {
     if (value == null || value.isEmpty) return null;
     final regex = RegExp(r'^\(\d{2}\)\s\d{5}-\d{4}$');
@@ -74,4 +80,10 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     }
     return null;
   }
+
+  // máscara de telefone
+  var telefoneMask = MaskTextInputFormatter(
+    mask: '(##) #####-####',
+    filter: { "#": RegExp(r'[0-9]') },
+  );
 }
