@@ -1,6 +1,5 @@
 // padrão singleton
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
 
 class DbHelper {
@@ -111,6 +110,7 @@ class DbHelper {
 
   String get _config => '''
   CREATE TABLE config (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
     nome_instituicao TEXT NOT NULL,
     cnpj TEXT,
     endereco TEXT,

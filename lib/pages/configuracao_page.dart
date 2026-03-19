@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:projeto_enfermagem_desktop/service/config_service.dart';
+import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
+import '../model/config.dart';
 import '../theme/theme.dart';
 
 class ConfiguracaoPage extends StatefulWidget{
@@ -17,6 +20,35 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _cnpjController = TextEditingController();
+
+  final ConfigService _configService = ConfigService();
+
+  @override
+  void initState(){
+  }
+
+  @override
+  void dispose(){
+    _instituicaoController.dispose();
+    _enderecoController.dispose();
+    _telefoneController.dispose();
+    _cnpjController.dispose();
+
+    super.dispose();
+  }
+
+  Future<void> salvarConfiguracoes() async{
+    final Config configSalvar = Config(
+      nomeInstituicao: _instituicaoController.text,
+      endereco: _enderecoController.text,
+      telefone: _telefoneController.text,
+      impressora: "nada por enquanto",
+      cnpj: _cnpjController.text,
+    );
+
+    _configService.salvarConfiguracoes(configSalvar);
+    // todo: FAZER O TOAST DE MENSAGEM
+  }
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -54,10 +86,13 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
                         const SizedBox(height: 12),
                         CampoTextoWidget(
                           label: "Nome da Instituição",
+                          obrigatorio: true,
                           controller: _instituicaoController,
                         ),
+                        const SizedBox(height: 6),
                         CampoTextoWidget(
                           label: "CNPJ",
+                          obrigatorio: true,
                           controller: _cnpjController,
                           inputFormatter: [
                             cnpjMask,
@@ -65,10 +100,12 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
                           hintText: "00.000.000/0000-00",
                           validator: validarCnpj,
                         ),
+                        const SizedBox(height: 6),
                         CampoTextoWidget(
                           label: "Endereço",
                           controller: _enderecoController,
                         ),
+                        const SizedBox(height: 6),
                         CampoTextoWidget(
                           label: "Telefone",
                           controller: _telefoneController,
@@ -77,6 +114,11 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
                             telefoneMask,
                           ],
                           validator: validarTelefone,
+                        ),
+                        const SizedBox(height: 26),
+                        ButtonAmareloWidget(
+                            texto: "Salvar Configurações",
+                            onPressed: salvarConfiguracoes,
                         ),
                       ],
                     ),

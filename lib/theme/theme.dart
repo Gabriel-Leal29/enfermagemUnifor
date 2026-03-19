@@ -37,3 +37,10 @@ const textStyleBlackTituloHeader = TextStyle(fontSize: 22, color: Colors.black, 
 const textStyleBlackTituloPage = TextStyle(fontSize: 24, color: Colors.black, fontWeight: FontWeight.bold);
 const textStyleBlackLabel =  TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold);
 const textStyleSubTituloHeader = TextStyle(fontSize: 12, color: Color(0xFF757575));
+
+
+// -------------- DIVERSOS ---------------//
+const greenSuccess = Color(0xFF2E7D32);
+const amberWarning = Color(0xFFFFA000);
+const redAlert = Color.fromRGBO(249, 117, 90, 1);
+const coolGrey3 = Color(0xFF95A7B5);
