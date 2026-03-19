@@ -37,6 +37,7 @@ const textStyleBlackTituloHeader = TextStyle(fontSize: 22, color: Colors.black, 
 const textStyleBlackTituloPage = TextStyle(fontSize: 24, color: Colors.black, fontWeight: FontWeight.bold);
 const textStyleBlackLabel =  TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold);
 const textStyleSubTituloHeader = TextStyle(fontSize: 12, color: Color(0xFF757575));
+const textStyleBlackToast =  TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold);
 
 
 // -------------- DIVERSOS ---------------//

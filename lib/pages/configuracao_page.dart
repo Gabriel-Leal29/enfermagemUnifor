@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:projeto_enfermagem_desktop/service/config_service.dart';
+import 'package:projeto_enfermagem_desktop/toast/show_toast.dart';
 import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
@@ -22,9 +23,19 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   final TextEditingController _cnpjController = TextEditingController();
 
   final ConfigService _configService = ConfigService();
+  late Config? _config;
+  bool _iniciado = false;
 
   @override
   void initState(){
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() async{
+    super.didChangeDependencies();
+
+    await recuperarConfiguracoes();
   }
 
   @override
@@ -38,7 +49,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   }
 
   Future<void> salvarConfiguracoes() async{
-    final Config configSalvar = Config(
+    _config = Config(
       nomeInstituicao: _instituicaoController.text,
       endereco: _enderecoController.text,
       telefone: _telefoneController.text,
@@ -46,8 +57,31 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
       cnpj: _cnpjController.text,
     );
 
-    _configService.salvarConfiguracoes(configSalvar);
-    // todo: FAZER O TOAST DE MENSAGEM
+    _configService.salvarConfiguracoes(_config!);
+    showToast(
+        context,
+        message: "Configurações salvas com sucesso!",
+        type: ToastType.success
+    );
+  }
+
+  Future<void> recuperarConfiguracoes() async{
+    try{
+      final configRecuperada = await _configService.buscarConfiguracoes();
+
+      setState(() {
+        _config = configRecuperada;
+
+        _instituicaoController.text = _config?.nomeInstituicao ?? "";
+        _enderecoController.text = _config?.endereco ?? "";
+        _telefoneController.text = _config?.telefone ?? "";
+        _cnpjController.text = _config?.cnpj ?? "";
+        _iniciado= true;
+      });
+    }on Exception{
+      // toast de erro
+      rethrow;
+    }
   }
 
   @override
@@ -55,7 +89,9 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     width: 800,
     child: Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
+      child: !_iniciado
+          ? const SizedBox() // gambiarra para n piscar, um CircularProgress iria dar uma piscada
+      : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(

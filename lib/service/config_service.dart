@@ -12,4 +12,12 @@ class ConfigService {
       throw Exception("Erro ao salvar as configurações!");
     }
   }
+
+  Future<Config?> buscarConfiguracoes() async{
+    try{
+      return await _configDao.getConfig();
+    }on Exception catch(e){
+      throw Exception("Erro buscar as configurações armazenadas");
+    }
+  }
 }
