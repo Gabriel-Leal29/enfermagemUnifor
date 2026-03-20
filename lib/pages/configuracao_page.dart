@@ -5,6 +5,7 @@ import 'package:projeto_enfermagem_desktop/toast/show_toast.dart';
 import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
+import '../exceptions/config_exception.dart';
 import '../model/config.dart';
 import '../theme/theme.dart';
 
@@ -49,20 +50,25 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   }
 
   Future<void> salvarConfiguracoes() async{
-    _config = Config(
-      nomeInstituicao: _instituicaoController.text,
-      endereco: _enderecoController.text,
-      telefone: _telefoneController.text,
-      impressora: "nada por enquanto",
-      cnpj: _cnpjController.text,
-    );
+    try{
+      _config = Config(
+        nomeInstituicao: _instituicaoController.text,
+        endereco: _enderecoController.text,
+        telefone: _telefoneController.text,
+        impressora: "nada por enquanto",
+        cnpj: _cnpjController.text,
+      );
 
-    _configService.salvarConfiguracoes(_config!);
-    showToast(
-        context,
-        message: "Configurações salvas com sucesso!",
-        type: ToastType.success
-    );
+      await _configService.salvarConfiguracoes(_config!);
+      showToast(
+          context,
+          message: "Configurações salvas com sucesso!",
+          type: ToastType.success
+      );
+    }on ConfigException catch(e){
+      showToast(context, message: e.message, type: ToastType.error);
+    }
+
   }
 
   Future<void> recuperarConfiguracoes() async{
@@ -78,9 +84,8 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
         _cnpjController.text = _config?.cnpj ?? "";
         _iniciado= true;
       });
-    }on Exception{
-      // toast de erro
-      rethrow;
+    }on ConfigException catch(e){
+      showToast(context, message: e.message, type: ToastType.error);
     }
   }
 

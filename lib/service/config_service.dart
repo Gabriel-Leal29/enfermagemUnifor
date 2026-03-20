@@ -1,4 +1,5 @@
 import 'package:projeto_enfermagem_desktop/dao/config_dao.dart';
+import 'package:projeto_enfermagem_desktop/exceptions/config_exception.dart';
 
 import '../model/config.dart';
 
@@ -8,16 +9,16 @@ class ConfigService {
   Future<void> salvarConfiguracoes(Config config) async{
     try{
       _configDao.salvar(config);
-    }on Exception catch(e){
-      throw Exception("Erro ao salvar as configurações!");
+    }on ConfigException catch(e){
+      throw ConfigException("Erro ao salvar as configurações");
     }
   }
 
   Future<Config?> buscarConfiguracoes() async{
     try{
       return await _configDao.getConfig();
-    }on Exception catch(e){
-      throw Exception("Erro buscar as configurações armazenadas");
+    }on ConfigException catch(e){
+      throw ConfigException("Erro buscar as configurações armazenadas");
     }
   }
 }
