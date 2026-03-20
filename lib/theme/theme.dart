@@ -18,7 +18,7 @@ class HexColor extends Color {
 // -------------- BACKGROUND ---------------//
 
 Color azulUnifor = HexColor("#12253f");
-Color azulUniforSelecionado = HexColor("#12253f");
+Color azulUniforSelecionado = HexColor("#243B5A");
 Color amareloUnifor = HexColor("#f9bb1f");
 Color cinzaFundo = HexColor("#f2f4f7");
 
@@ -29,9 +29,19 @@ const Color menuItemNaoSelecionado = Color(0xFF8FA6C1);
 
 // -------------- TEXTOS ---------------//
 
-const textStyleGrayTitle = TextStyle(fontSize: 19, color: Colors.white, fontWeight: FontWeight.bold);
+const textStyleGrayTitle = TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold);
 // TODO: ALTERAR PARA A COR DEFINITIVA DO TITULO
 const textStyleSubTituloAndMenuItem = TextStyle(color: menuItemNaoSelecionado, fontWeight: FontWeight.w400, fontSize: 14);
 const textStyleMenuItemSelecionado = TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14);
-const textStyleBlack = TextStyle(fontSize: 19, color: Colors.black, fontWeight: FontWeight.bold);
+const textStyleBlackTituloHeader = TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold);
+const textStyleBlackTituloPage = TextStyle(fontSize: 24, color: Colors.black, fontWeight: FontWeight.bold);
+const textStyleBlackLabel =  TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold);
 const textStyleSubTituloHeader = TextStyle(fontSize: 12, color: Color(0xFF757575));
+const textStyleBlackToast =  TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold);
+
+
+// -------------- DIVERSOS ---------------//
+const greenSuccess = Color(0xFF2E7D32);
+const amberWarning = Color(0xFFFFA000);
+const redAlert = Color.fromRGBO(249, 117, 90, 1);
+const coolGrey3 = Color(0xFF95A7B5);

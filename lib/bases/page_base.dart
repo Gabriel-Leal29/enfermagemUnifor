@@ -21,45 +21,13 @@ class _PageBaseState extends State<PageBase>{
     child: _buildGeral(),
   );
 
-  Widget _buildGeral() => Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: Colors.black87),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: Colors.blueGrey,
-            child: Text("E", style: TextStyle(color: Colors.white)),
-          ),
-          const SizedBox(width: 16),
-        ],
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Sistema de Enfermagem",
-              style: textStyleBlack,
-            ),
-            Text(
-              "UNIFOR-MG · Gestão de Atendimentos",
-              style: textStyleSubTituloHeader,
-            ),
-          ],
+  Widget _buildGeral() => Container(
+        color: cinzaFundo,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, 30, 16, 30),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            widget.body,
+          ]),
         ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(24),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          widget.body,
-        ]),
-      )
   );
 }

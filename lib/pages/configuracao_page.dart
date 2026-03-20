@@ -1,115 +1,205 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_enfermagem_desktop/bases/configuracao_base.dart';
-import 'package:projeto_enfermagem_desktop/pages/produtos_page.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:projeto_enfermagem_desktop/service/config_service.dart';
+import 'package:projeto_enfermagem_desktop/toast/show_toast.dart';
+import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
+import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
-import 'package:projeto_enfermagem_desktop/theme/theme.dart';
-
-import '../bases/page_base.dart';
+import '../exceptions/config_exception.dart';
+import '../model/config.dart';
+import '../theme/theme.dart';
 
 class ConfiguracaoPage extends StatefulWidget{
   const ConfiguracaoPage({super.key});
-
+  
   @override
   State<StatefulWidget> createState() => _ConfiguracaoPageState();
+
 }
 
 class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
-  // lista dos widgets que vai ser usados na barra lateral
-  List<Widget> get _opcoesMenuLateral => [
-    Center(
-      child: PageBase(
-        body: Text("Exemplo page 1"),
-      ),
-    ),
-    Center(
-      child: PageBase(
-        body: Text("Exemplo page 2"),
-      ),
-    ),
-    Center(
-      child: ProdutosPage(),
-    )
-  ];
+  final TextEditingController _instituicaoController = TextEditingController();
+  final TextEditingController _enderecoController = TextEditingController();
+  final TextEditingController _telefoneController = TextEditingController();
+  final TextEditingController _cnpjController = TextEditingController();
 
-  int _selectedIndex = 0;
-  final String titulo = "UNIFOR-MG";
-  final String subTitulo = "ENFERMAGEM";
+  final ConfigService _configService = ConfigService();
+  late Config? _config;
+  bool _iniciado = false;
 
   @override
-  Widget build(BuildContext context) => ConfiguracaoBase(
-      barraLateral: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-        children: [
-          _buildBarraLateralHeader(titulo, subTitulo, Icons.favorite),
-          //TODO: passa o nome do menu, icone e a posição na lista 0,1,2,3...
-          _buildMenuItem("Título 1", Icons.dashboard_customize_rounded, 0),
-          _buildMenuItem("Título 2", Icons.dashboard_customize_rounded, 1),
-          _buildMenuItem("Produtos", Icons.shopping_cart_checkout_rounded, 2),
-        ],
-      ),
-      conteudo: _opcoesMenuLateral[_selectedIndex]
-  );
-
-  Widget _buildBarraLateralHeader(String titulo, String subTitulo, IconData icone) => Container(
-    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-    decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: Colors.transparent)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: azulUnifor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(icone, color: amareloUnifor, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(titulo, style: textStyleGrayTitle),
-              Text(subTitulo, style:  textStyleSubTituloAndMenuItem),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget _buildMenuItem(String title, IconData icon, int index) {
-    final bool isSelected = _selectedIndex == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: () => setState(() => _selectedIndex = index),
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF243B5A) // fundo do item selecionado
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected ? Colors.white : menuItemNaoSelecionado,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: isSelected? textStyleMenuItemSelecionado : textStyleSubTituloAndMenuItem,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  void initState(){
+    super.initState();
   }
+
+  @override
+  void didChangeDependencies() async{
+    super.didChangeDependencies();
+
+    await recuperarConfiguracoes();
+  }
+
+  @override
+  void dispose(){
+    _instituicaoController.dispose();
+    _enderecoController.dispose();
+    _telefoneController.dispose();
+    _cnpjController.dispose();
+
+    super.dispose();
+  }
+
+  Future<void> salvarConfiguracoes() async{
+    try{
+      _config = Config(
+        nomeInstituicao: _instituicaoController.text,
+        endereco: _enderecoController.text,
+        telefone: _telefoneController.text,
+        impressora: "nada por enquanto",
+        cnpj: _cnpjController.text,
+      );
+
+      await _configService.salvarConfiguracoes(_config!);
+      showToast(
+          context,
+          message: "Configurações salvas com sucesso!",
+          type: ToastType.success
+      );
+    }on ConfigException catch(e){
+      showToast(context, message: e.message, type: ToastType.error);
+    }
+
+  }
+
+  Future<void> recuperarConfiguracoes() async{
+    try{
+      final configRecuperada = await _configService.buscarConfiguracoes();
+
+      setState(() {
+        _config = configRecuperada;
+
+        _instituicaoController.text = _config?.nomeInstituicao ?? "";
+        _enderecoController.text = _config?.endereco ?? "";
+        _telefoneController.text = _config?.telefone ?? "";
+        _cnpjController.text = _config?.cnpj ?? "";
+        _iniciado= true;
+      });
+    }on ConfigException catch(e){
+      showToast(context, message: e.message, type: ToastType.error);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 800,
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: !_iniciado
+          ? const SizedBox() // gambiarra para n piscar, um CircularProgress iria dar uma piscada
+      : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              color: cinzaFundo,
+              child: Text("Configurações", style: textStyleBlackTituloPage)
+            ),
+
+            const SizedBox(height: 26),
+
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Dados das Instituição", style: textStyleBlackTituloPage),
+                        const SizedBox(height: 12),
+                        CampoTextoWidget(
+                          label: "Nome da Instituição",
+                          obrigatorio: true,
+                          controller: _instituicaoController,
+                        ),
+                        const SizedBox(height: 6),
+                        CampoTextoWidget(
+                          label: "CNPJ",
+                          obrigatorio: true,
+                          controller: _cnpjController,
+                          inputFormatter: [
+                            cnpjMask,
+                          ],
+                          hintText: "00.000.000/0000-00",
+                          validator: validarCnpj,
+                        ),
+                        const SizedBox(height: 6),
+                        CampoTextoWidget(
+                          label: "Endereço",
+                          controller: _enderecoController,
+                        ),
+                        const SizedBox(height: 6),
+                        CampoTextoWidget(
+                          label: "Telefone",
+                          controller: _telefoneController,
+                          hintText: "(00) 00000-0000",
+                          inputFormatter: [
+                            telefoneMask,
+                          ],
+                          validator: validarTelefone,
+                        ),
+                        const SizedBox(height: 26),
+                        ButtonAmareloWidget(
+                            texto: "Salvar Configurações",
+                            onPressed: salvarConfiguracoes,
+                        ),
+                      ],
+                    ),
+              ),
+            )
+          ],
+      ),
+    ),
+  );
+
+  // validador de CNPJ
+  String? validarCnpj(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final regex = RegExp(r'^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$');
+    if (!regex.hasMatch(value)) {
+      return "CNPJ inválido";
+    }
+    return null;
+  }
+
+  // mascara de CNPJ
+  var cnpjMask = MaskTextInputFormatter(
+    mask: '##.###.###/####-##',
+    filter: { "#": RegExp(r'[0-9]') },
+  );
+
+  // validor de telefone
+  String? validarTelefone(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final regex = RegExp(r'^\(\d{2}\)\s\d{5}-\d{4}$');
+
+    if (!regex.hasMatch(value)) {
+      return "Telefone inválido";
+    }
+    return null;
+  }
+
+  // máscara de telefone
+  var telefoneMask = MaskTextInputFormatter(
+    mask: '(##) #####-####',
+    filter: { "#": RegExp(r'[0-9]') },
+  );
 }
