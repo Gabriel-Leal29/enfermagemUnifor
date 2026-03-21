@@ -88,15 +88,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
       final configRecuperada = await _configService.buscarConfiguracoes();
       final impressorasBuscadas = await _configService.listarImpressoras();
 
-      // if(configRecuperada == null){
-      //   setState(() {
-      //     _iniciado = true;
-      //   });
-      //   return;
-      // }
-
       //busco a impressora salva no banco
-
       if(configRecuperada != null){
         _impressoraSelecionada = impressorasBuscadas.where(
                 (impressora) => impressora.name == configRecuperada.impressora).isNotEmpty
