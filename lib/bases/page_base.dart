@@ -17,7 +17,6 @@ class PageBase extends StatefulWidget{
 class _PageBaseState extends State<PageBase>{
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 800, // TODO: olhar a melhor altura no andamento do desenvolvimento
     child: _buildGeral(),
   );
 

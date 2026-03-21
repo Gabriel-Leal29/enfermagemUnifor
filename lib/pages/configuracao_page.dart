@@ -20,13 +20,14 @@ class ConfiguracaoPage extends StatefulWidget{
 }
 
 class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
+  final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _instituicaoController = TextEditingController();
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _cnpjController = TextEditingController();
 
   final ConfigService _configService = ConfigService();
-  late Config? _config;
   bool _iniciado = false;
 
   List<Printer> _impressoras = [];
@@ -38,10 +39,12 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   }
 
   @override
-  void didChangeDependencies() async{
+  void didChangeDependencies() {
     super.didChangeDependencies();
 
-    await recuperarConfiguracoes();
+    if(!_iniciado){
+      recuperarConfiguracoes();
+    }
   }
 
   @override
@@ -55,16 +58,20 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   }
 
   Future<void> salvarConfiguracoes() async{
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     try{
-      _config = Config(
+      Config config = Config(
         nomeInstituicao: _instituicaoController.text,
         endereco: _enderecoController.text,
         telefone: _telefoneController.text,
-        impressora: "nada por enquanto",
+        impressora: _impressoraSelecionada?.name,
         cnpj: _cnpjController.text,
       );
 
-      await _configService.salvarConfiguracoes(_config!);
+      await _configService.salvarConfiguracoes(config);
       showToast(
           context,
           message: "Configurações salvas com sucesso!",
@@ -81,14 +88,29 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
       final configRecuperada = await _configService.buscarConfiguracoes();
       final impressorasBuscadas = await _configService.listarImpressoras();
 
-      setState(() {
-        _config = configRecuperada;
+      // if(configRecuperada == null){
+      //   setState(() {
+      //     _iniciado = true;
+      //   });
+      //   return;
+      // }
 
-        _instituicaoController.text = _config?.nomeInstituicao ?? "";
-        _enderecoController.text = _config?.endereco ?? "";
-        _telefoneController.text = _config?.telefone ?? "";
-        _cnpjController.text = _config?.cnpj ?? "";
+      //busco a impressora salva no banco
+
+      if(configRecuperada != null){
+        _impressoraSelecionada = impressorasBuscadas.where(
+                (impressora) => impressora.name == configRecuperada.impressora).isNotEmpty
+            ?
+        impressorasBuscadas.firstWhere((impressora) => impressora.name == configRecuperada.impressora)
+            : null;
+      }
+
+      setState(() {
         _impressoras = impressorasBuscadas;
+        _instituicaoController.text = configRecuperada?.nomeInstituicao ?? "";
+        _enderecoController.text = configRecuperada?.endereco ?? "";
+        _telefoneController.text = configRecuperada?.telefone ?? "";
+        _cnpjController.text = configRecuperada?.cnpj ?? "";
 
         _iniciado= true;
       });
@@ -104,93 +126,95 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
       padding: const EdgeInsets.all(8.0),
       child: !_iniciado
           ? const SizedBox() // gambiarra para n piscar, um CircularProgress iria dar uma piscada
-      : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              color: cinzaFundo,
-              child: Text("Configurações", style: textStyleBlackTituloPage)
-            ),
-
-            const SizedBox(height: 26),
-
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+      : Form(
+        key: _formKey,
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                color: cinzaFundo,
+                child: Text("Configurações", style: textStyleBlackTituloPage)
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Dados das Instituição", style: textStyleBlackTituloPage),
-                        const SizedBox(height: 12),
-                        CampoTextoWidget(
-                          label: "Nome da Instituição",
-                          obrigatorio: true,
-                          controller: _instituicaoController,
-                        ),
-                        const SizedBox(height: 6),
-                        CampoTextoWidget(
-                          label: "CNPJ",
-                          obrigatorio: true,
-                          controller: _cnpjController,
-                          inputFormatter: [
-                            cnpjMask,
-                          ],
-                          hintText: "00.000.000/0000-00",
-                          validator: validarCnpj,
-                        ),
-                        const SizedBox(height: 6),
-                        CampoTextoWidget(
-                          label: "Endereço",
-                          controller: _enderecoController,
-                        ),
-                        const SizedBox(height: 6),
-                        CampoTextoWidget(
-                          label: "Telefone",
-                          controller: _telefoneController,
-                          hintText: "(00) 00000-0000",
-                          inputFormatter: [
-                            telefoneMask,
-                          ],
-                          validator: validarTelefone,
-                        ),
-                        const SizedBox(height: 20),
 
-                        CampoDropdownWidget<Printer>(
-                          label: "Impressora",
-                          hintText: "Selecione uma impressora",
-                          items: _impressoras,
-                          value: _impressoraSelecionada,
+              const SizedBox(height: 26),
 
-                          getLabel: (p) => p.name,
-
-                          onSelected: (Printer p) {
-                            setState(() {
-                              _impressoraSelecionada = p;
-                            });
-                          },
-                        ),
-
-                        const SizedBox(height: 26),
-                        ButtonAmareloWidget(
-                            texto: "Salvar Configurações",
-                            onPressed: salvarConfiguracoes,
-                        ),
-                      ],
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-              ),
-            )
-          ],
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Dados das Instituição", style: textStyleBlackTituloPage),
+                          const SizedBox(height: 12),
+                          CampoTextoWidget(
+                            label: "Nome da Instituição",
+                            obrigatorio: true,
+                            controller: _instituicaoController,
+                          ),
+                          const SizedBox(height: 6),
+                          CampoTextoWidget(
+                            label: "CNPJ",
+                            controller: _cnpjController,
+                            inputFormatter: [
+                              cnpjMask,
+                            ],
+                            hintText: "00.000.000/0000-00",
+                            validator: validarCnpj,
+                          ),
+                          const SizedBox(height: 6),
+                          CampoTextoWidget(
+                            label: "Endereço",
+                            controller: _enderecoController,
+                          ),
+                          const SizedBox(height: 6),
+                          CampoTextoWidget(
+                            label: "Telefone",
+                            controller: _telefoneController,
+                            hintText: "(00) 00000-0000",
+                            inputFormatter: [
+                              telefoneMask,
+                            ],
+                            validator: validarTelefone,
+                          ),
+                          const SizedBox(height: 20),
+
+                          CampoDropdownWidget<Printer?>(
+                            label: "Impressora",
+                            hintText: "Selecione uma impressora",
+                            items: [null, ..._impressoras],
+                            value: _impressoraSelecionada,
+
+                            getLabel: (p) => p?.name ?? "Nenhuma",
+
+                            onSelected: (Printer? p) {
+                              setState(() {
+                                _impressoraSelecionada = p;
+                              });
+                            },
+                          ),
+
+                          const SizedBox(height: 26),
+                          ButtonAmareloWidget(
+                              texto: "Salvar Configurações",
+                              onPressed: salvarConfiguracoes,
+                          ),
+                        ],
+                      ),
+                ),
+              )
+            ],
+        ),
       ),
     ),
   );

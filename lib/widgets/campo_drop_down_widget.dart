@@ -60,7 +60,6 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Label
             Row(
               children: [
                 Text(widget.label, style: textStyleBlackLabel),
