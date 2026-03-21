@@ -1,3 +1,5 @@
+import 'package:printing_ffi/models/models.dart';
+import 'package:printing_ffi/printing_ffi.dart';
 import 'package:projeto_enfermagem_desktop/dao/config_dao.dart';
 import 'package:projeto_enfermagem_desktop/exceptions/config_exception.dart';
 
@@ -19,6 +21,15 @@ class ConfigService {
       return await _configDao.getConfig();
     }on ConfigException catch(e){
       throw ConfigException("Erro buscar as configurações armazenadas");
+    }
+  }
+
+  Future<List<Printer>> listarImpressoras() async{
+    try{
+      final impressoras = PrintingFfi.instance.listPrinters();
+      return impressoras;
+    }on ConfigException catch(e){
+      throw ConfigException("Erro ao buscar as impressoras");
     }
   }
 }

@@ -40,6 +40,7 @@ class _CampoTextoWidget extends State<CampoTextoWidget>{
           controller: widget.controller,
           inputFormatters: widget.inputFormatter,
           decoration: InputDecoration(
+            hoverColor: Colors.transparent,
             hintText: widget.hintText,
             filled: true,
             fillColor: cinzaFundo,

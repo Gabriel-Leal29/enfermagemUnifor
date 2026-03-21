@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:printing_ffi/models/printer.dart';
 import 'package:projeto_enfermagem_desktop/service/config_service.dart';
 import 'package:projeto_enfermagem_desktop/toast/show_toast.dart';
 import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
@@ -8,6 +9,7 @@ import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 import '../exceptions/config_exception.dart';
 import '../model/config.dart';
 import '../theme/theme.dart';
+import '../widgets/campo_drop_down_widget.dart';
 
 class ConfiguracaoPage extends StatefulWidget{
   const ConfiguracaoPage({super.key});
@@ -26,6 +28,9 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   final ConfigService _configService = ConfigService();
   late Config? _config;
   bool _iniciado = false;
+
+  List<Printer> _impressoras = [];
+  Printer? _impressoraSelecionada;
 
   @override
   void initState(){
@@ -74,6 +79,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   Future<void> recuperarConfiguracoes() async{
     try{
       final configRecuperada = await _configService.buscarConfiguracoes();
+      final impressorasBuscadas = await _configService.listarImpressoras();
 
       setState(() {
         _config = configRecuperada;
@@ -82,6 +88,8 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
         _enderecoController.text = _config?.endereco ?? "";
         _telefoneController.text = _config?.telefone ?? "";
         _cnpjController.text = _config?.cnpj ?? "";
+        _impressoras = impressorasBuscadas;
+
         _iniciado= true;
       });
     }on ConfigException catch(e){
@@ -156,6 +164,23 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
                           ],
                           validator: validarTelefone,
                         ),
+                        const SizedBox(height: 20),
+
+                        CampoDropdownWidget<Printer>(
+                          label: "Impressora",
+                          hintText: "Selecione uma impressora",
+                          items: _impressoras,
+                          value: _impressoraSelecionada,
+
+                          getLabel: (p) => p.name,
+
+                          onSelected: (Printer p) {
+                            setState(() {
+                              _impressoraSelecionada = p;
+                            });
+                          },
+                        ),
+
                         const SizedBox(height: 26),
                         ButtonAmareloWidget(
                             texto: "Salvar Configurações",
