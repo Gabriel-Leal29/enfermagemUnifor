@@ -4,6 +4,7 @@ import 'package:projeto_enfermagem_desktop/theme/theme.dart';
 
 import '../bases/page_base.dart';
 import 'configuracao_page.dart';
+import 'produtos_page.dart';
 
 class Home extends StatefulWidget{
   const Home({super.key});
@@ -21,10 +22,8 @@ class _HomeState extends State<Home>{
       ),
     ),
     Center(
-      child: PageBase(
-        body: Text("Exemplo page 2"),
+      child: PageBase(body: ProdutosPage())
       ),
-    ),
     Center(
       child: PageBase(body: ConfiguracaoPage())
     ),
@@ -42,7 +41,7 @@ class _HomeState extends State<Home>{
           _buildBarraLateralHeader(titulo, subTitulo, Icons.favorite),
           //TODO: passa o nome do menu, icone e a posição na lista 0,1,2,3...
           _buildMenuItem("Título 1", Icons.dashboard_customize_rounded, 0),
-          _buildMenuItem("Título 2", Icons.dashboard_customize_rounded, 1),
+          _buildMenuItem("Produtos", Icons.shopping_cart_checkout_rounded, 1),
           _buildMenuItem("Configurações", Icons.settings_rounded, 2),
         ],
       ),

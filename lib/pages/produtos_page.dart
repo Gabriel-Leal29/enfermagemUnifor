@@ -10,6 +10,9 @@ class ProdutosPage extends StatefulWidget {
 }
 
 class _ProdutosPageState extends State<ProdutosPage> {
+
+
+  
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -33,9 +36,8 @@ class _ProdutosPageState extends State<ProdutosPage> {
           ),
 
           const SizedBox(height: 24),
-          Campo_busca_produto(),//configuração barra de pesquisa de produto
+          Campo_busca_produto(), //configuração barra de pesquisa de produto
           const SizedBox(height: 24),
-          
         ],
       ),
     );
