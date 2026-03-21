@@ -21,7 +21,7 @@ Color azulUnifor = HexColor("#12253f");
 Color azulUniforSelecionado = HexColor("#243B5A");
 Color amareloUnifor = HexColor("#f9bb1f");
 Color cinzaFundo = HexColor("#f2f4f7");
-
+Color azulSelecionadoDropDown = HexColor("#eaeff6");
 const Color menuItemNaoSelecionado = Color(0xFF8FA6C1);
 
 

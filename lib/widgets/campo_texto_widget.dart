@@ -37,9 +37,11 @@ class _CampoTextoWidget extends State<CampoTextoWidget>{
         Text(widget.label, style: textStyleBlackLabel),
         const SizedBox(height: 6),
         TextFormField(
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           controller: widget.controller,
           inputFormatters: widget.inputFormatter,
           decoration: InputDecoration(
+            hoverColor: Colors.transparent,
             hintText: widget.hintText,
             filled: true,
             fillColor: cinzaFundo,
@@ -65,7 +67,7 @@ class _CampoTextoWidget extends State<CampoTextoWidget>{
               ),
           ),
             validator: (value) {
-              if (widget.obrigatorio && (value == null || value.trim().isEmpty)) {
+              if (widget.obrigatorio && ( value == null || value == "" || value.trim().isEmpty)) {
                 return "Campo obrigatório";
               }
 
