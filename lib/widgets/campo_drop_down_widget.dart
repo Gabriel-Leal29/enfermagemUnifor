@@ -142,15 +142,10 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                         children: [
                           Expanded(
                             child: Text(
-                              widget.value == null
-                                  ? (widget.hintText ?? "Selecione")
-                                  : (widget.getLabel != null
+                              widget.getLabel != null
                                   ? widget.getLabel!(widget.value as T)
-                                  : widget.value.toString()),
+                                  : (widget.value?.toString() ?? widget.hintText ?? "Selecione"),
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 15,
-                              ),
                             ),
                           ),
                           const Icon(Icons.keyboard_arrow_down),
