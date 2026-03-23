@@ -30,14 +30,25 @@ class DbHelper {
 
   void _onCreate(db, versao) async {
     await db.execute(_fornecedor);
+    await db.execute(_tipoPaciente);
+    await db.execute(_tipoProduto);
+    await db.execute(_config);
     await db.execute(_produto);
     await db.execute(_paciente);
     await db.execute(_gerenciarEstoque);
     //await db.execute(_consulta);
     //await db.execute(_consultaProduto);
-    await db.execute(_tipoPaciente);
-    await db.execute(_tipoProduto);
-    await db.execute(_config);
+    await _inserirDadosIniciais(db);
+  }
+
+  Future<void> _inserirDadosIniciais(Database db) async {
+
+    await db.insert('tipoProduto', {'descricao': 'ML'});
+    await db.insert('tipoProduto', {'descricao': 'UND'});
+
+    await db.insert('TipoPaciente', {'descricao': 'ALUNO'});
+    await db.insert('TipoPaciente', {'descricao': 'VISITANTE'});
+    await db.insert('TipoPaciente', {'descricao': 'PROFESSOR'});
   }
 
   String get _fornecedor => '''
@@ -53,7 +64,7 @@ class DbHelper {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero_nfe TEXT NOT NULL,
     id_fornecedor INTEGER,
-    id_produto INTEGER, 
+    id_produto INTEGER,                 
     quantidade REAL NOT NULL,
     data DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id),
