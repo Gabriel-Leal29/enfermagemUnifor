@@ -39,11 +39,12 @@ class DbHelper {
     await db.execute(_config);
   }
 
-  String get _fornecedor => '''
+String get _fornecedor => '''
   CREATE TABLE fornecedor (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
-    cnpj TEXT
+    razao_social TEXT,
+    cnpj TEXT UNIQUE NOT NULL
   )
 ''';
 
@@ -72,12 +73,14 @@ class DbHelper {
   )
 ''';
 
-  String get _paciente => '''
+String get _paciente => '''
   CREATE TABLE paciente(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
+    matricula TEXT,
+    cpf TEXT UNIQUE NOT NULL,
     id_tipo_paciente INTEGER NOT NULL,
-    FOREIGN KEY (id_tipo_paciente) REFERENCES TipoPaciente(id)
+    FOREIGN KEY (id_tipo_paciente) REFERENCES tipo_paciente(id)
   )
 ''';
 
