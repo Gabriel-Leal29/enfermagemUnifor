@@ -1,4 +1,3 @@
-
 // padrão singleton
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -21,8 +20,14 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'enfermagem.db');
     print("CAMINHO DO DB: $path");
 
+    // =====================================================================
+    // ATENÇÃO: RODE O APP UMA VEZ COM ESSA LINHA DESCOMENTADA PARA ZERAR O BANCO.
+    // DEPOIS QUE FUNCIONAR, COMENTE OU APAGUE ESTA LINHA, SENÃO VAI PERDER OS DADOS TODO DIA!
+   // await deleteDatabase(path);
+    // =====================================================================
+
     return await openDatabase(
-      join(await getDatabasesPath(), 'enfermagem.db'),
+      path, // não precisa do join aqui de novo, pois já está na variável path
       version: 1,
       onCreate: _onCreate,
     );
@@ -38,17 +43,25 @@ class DbHelper {
     await db.execute(_gerenciarEstoque);
     //await db.execute(_consulta);
     //await db.execute(_consultaProduto);
+    
     await _inserirDadosIniciais(db);
   }
 
   Future<void> _inserirDadosIniciais(Database db) async {
-
+    // Inserindo Tipos de Produto
     await db.insert('tipoProduto', {'descricao': 'ML'});
     await db.insert('tipoProduto', {'descricao': 'UND'});
 
+    // Inserindo Tipos de Paciente
     await db.insert('TipoPaciente', {'descricao': 'ALUNO'});
     await db.insert('TipoPaciente', {'descricao': 'VISITANTE'});
     await db.insert('TipoPaciente', {'descricao': 'PROFESSOR'});
+
+    // Inserindo Fornecedor Fictício (Cimed)
+    await db.insert('fornecedor', {
+      'nome': 'Cimed', 
+      'cnpj': '02.814.497/0001-07' // CNPJ gerado aleatoriamente para preencher
+    });
   }
 
   String get _fornecedor => '''

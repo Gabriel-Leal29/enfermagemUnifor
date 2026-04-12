@@ -38,7 +38,7 @@ class _HomeState extends State<Home>{
       barraLateral: ListView(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         children: [
-          _buildBarraLateralHeader(titulo, subTitulo, Icons.favorite),
+          _buildBarraLateralHeader(titulo, subTitulo, Icons.health_and_safety_sharp),
           //TODO: passa o nome do menu, icone e a posição na lista 0,1,2,3...
           _buildMenuItem("Título 1", Icons.dashboard_customize_rounded, 0),
           _buildMenuItem("Produtos", Icons.shopping_cart_checkout_rounded, 1),

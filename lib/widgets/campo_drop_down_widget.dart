@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../theme/theme.dart';
 
 class CampoDropdownWidget<T> extends StatefulWidget {
@@ -34,9 +33,7 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
   @override
   void initState() {
     super.initState();
-
     _focusNode = FocusNode();
-
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -65,7 +62,6 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                 Text(widget.label, style: textStyleBlackLabel),
               ],
             ),
-
             const SizedBox(height: 6),
 
             /// Dropdown
@@ -86,19 +82,16 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                       minWidth: constraints.maxWidth,
                       maxWidth: constraints.maxWidth,
                     ),
-
                     onOpened: () => setState(() => _isMenuOpen = true),
                     onCanceled: () => setState(() => _isMenuOpen = false),
                     onSelected: (value) {
                       setState(() => _isMenuOpen = false);
                       widget.onSelected(value);
                     },
-
                     color: Colors.white,
                     elevation: 2,
                     padding: EdgeInsets.zero,
                     offset: const Offset(0, 52),
-
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
@@ -111,7 +104,6 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                     itemBuilder: (context) {
                       return widget.items.map((item) {
                         final isSelected = widget.value == item;
-
                         return PopupMenuItem<T>(
                           value: item,
                           height: 40,
@@ -142,9 +134,10 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                         children: [
                           Expanded(
                             child: Text(
-                              widget.getLabel != null
+                              // --- CORREÇÃO DA TELA VERMELHA AQUI ---
+                              (widget.getLabel != null && widget.value != null)
                                   ? widget.getLabel!(widget.value as T)
-                                  : (widget.value?.toString() ?? widget.hintText ?? "Selecione"),
+                                  : (widget.hintText ?? "Selecione"),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

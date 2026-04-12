@@ -17,7 +17,7 @@ class ProdutosService {
     await produtoDao.inserir(produto);
   }
 
-  Future<double> editarEstoqueProduto(
+  Future<double> editarEstoqueProdutoTotal(
     Produto produto,
     double novaQuantidade,
   ) async {
@@ -27,6 +27,24 @@ class ProdutosService {
     double diferenca = novaQuantidade - produto.estoque;
     await produtoDao.atualizarApenasEstoque(produto.id!, novaQuantidade);
     return diferenca;
+  }
+
+  Future<void> entradaApenasEstoque(Produto produto, double quantidadeEntrada) async {
+    if(quantidadeEntrada <= 0){
+      throw Exception('quantidade de entrada não pode ser 0 ou negativa');
+    }
+    double novoEstoque = produto.estoque + quantidadeEntrada;
+    await produtoDao.atualizarApenasEstoque(produto.id!, novoEstoque);
+  }
+
+  Future<void> saidaApenasEstoque(Produto produto, double quantidadeEntrada) async {
+    if(quantidadeEntrada <= 0){
+      throw Exception('quantidade de saida não pode ser 0 ou negativa');
+    }if(quantidadeEntrada > produto.estoque){
+      throw Exception('quantiade a ser retirada maior que estoque total');
+    }
+    double novoEstoque = produto.estoque - quantidadeEntrada;
+    await produtoDao.atualizarApenasEstoque(produto.id!, novoEstoque);
   }
 
   Future<void> editarProduto(Produto produto) async {

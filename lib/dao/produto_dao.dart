@@ -8,6 +8,20 @@ class ProdutoDao {
     return await db.insert('produto', produto.toMap());
   }
 
+  Future<Produto?> buscarPorId(int id) async {
+    final db = await DbHelper.instance.database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'produto',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isNotEmpty) {
+      return Produto.fromMap(maps.first);
+    }
+    return null;
+  }
+
   Future<List<Produto>> listarTodos() async {
     final db = await DbHelper.instance.database;
 

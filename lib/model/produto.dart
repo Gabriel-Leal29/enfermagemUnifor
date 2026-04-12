@@ -1,7 +1,7 @@
 class Produto {
   final int? id;
   final String nome;
-  final double estoque;
+  double estoque;
   final int idFornecedor;
   final int idTipoProduto;
 
@@ -27,14 +27,14 @@ class Produto {
     return Produto(
       id: map['id'],
       nome: map['nome'],
-      estoque: map['estoque'],
+      estoque: (map['estoque']as num).toDouble(),
       idFornecedor: map['id_fornecedor'],
       idTipoProduto: map['id_tipo_produto'],
     );
   }
 
   bool estoqueBaixo(int idTipo, double estoque) {
-    if ((idTipo == 1 && estoque < 10) || (idTipo == 2 && estoque < 100)) {
+    if ((idTipo == 1 && estoque <= 100) || (idTipo == 2 && estoque <= 10)) {
       return true;
     }
 
