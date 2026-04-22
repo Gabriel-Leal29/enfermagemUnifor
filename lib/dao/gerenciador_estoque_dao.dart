@@ -1,6 +1,5 @@
 import 'package:projeto_enfermagem_desktop/model/produto.dart';
 import '../model/gerenciador_estoque.dart';
-
 import '../database/db_helper.dart';
 import '../model/gerenciador_estoque.dart';
 
@@ -48,6 +47,17 @@ class GerenciadorEstoqueDao {
     return null;
   }
 
+  Future<List<GerenciadorEstoque>> listarTodos() async {
+    final db = await DbHelper.instance.database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'gerenciar_estoque',
+      orderBy: 'data DESC',
+    );
+
+    return maps.map((map) => GerenciadorEstoque.fromMap(map)).toList();
+  }
+
   Future<int> atualizarQuantidadeDaNota(GerenciadorEstoque nfe) async {
     final db = await DbHelper.instance.database;
 
@@ -65,8 +75,8 @@ class GerenciadorEstoqueDao {
       'gerenciar_estoque',
       where: 'numero_nfe = ?',
       whereArgs: [nfe],
-      limit: 1, // Para a busca no primeiro que achar
+      limit: 1,
     );
-    return result.isNotEmpty; // Retorna true se achou
+    return result.isNotEmpty;
   }
 }

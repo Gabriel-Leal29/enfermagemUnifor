@@ -7,7 +7,7 @@ class ProdutosService {
   ProdutosService(this.produtoDao);
 
   Future<void> adicionarProduto(Produto produto) async {
-    //verificação de campo nulo
+    
     if (produto.nome.trim().isEmpty) {
       throw Exception("Nome não pode ser nulo");
     }

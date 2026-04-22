@@ -56,6 +56,7 @@ class GerenciadorEstoqueServices {
         numeroNfe: item.numeroNfe,
         idProduto: idDoProdutoParaNfe,
         quantidade: item.quantidadeEntrada,
+        situacao: "ENTRADA",
         data: DateTime.now(),
       );
 
@@ -122,5 +123,15 @@ class GerenciadorEstoqueServices {
   Future<bool> checarSeNfeJaExiste(String nfe) async {
     if (nfe.trim().isEmpty) return false;
     return await gerenciadorEstoqueDao.verificarNfeExiste(nfe.trim());
+  }
+
+  Future<String> verSituacao(Produto produto, double quantidadePassada) async {
+    double qtdFinal = quantidadePassada - produto.estoque;
+
+    if (qtdFinal < 0) {
+      return "SAIDA";
+    } else {
+      return "ENTRADA";
+    }
   }
 }

@@ -78,6 +78,7 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                   height: 50,
                   width: double.infinity,
                   child: PopupMenuButton<T>(
+                    tooltip: '',
                     constraints: BoxConstraints(
                       minWidth: constraints.maxWidth,
                       maxWidth: constraints.maxWidth,

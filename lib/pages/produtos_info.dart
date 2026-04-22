@@ -3,25 +3,23 @@ import 'package:projeto_enfermagem_desktop/model/produto.dart';
 
 class ProdutosInfo extends StatelessWidget {
   final Produto produto;
+  final String nomeFornecedor;
+  final String nomeTipo;
 
-  const ProdutosInfo({super.key, required this.produto});
+  const ProdutosInfo({
+    super.key,
+    required this.produto,
+    required this.nomeFornecedor,
+    required this.nomeTipo,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // 1. Lógicas de tradução temporárias
-    String nomeFornecedor = 'Desconhecido';
-    if (produto.idFornecedor == 1) nomeFornecedor = 'Cimed';
-    if (produto.idFornecedor == 2) nomeFornecedor = 'Distrimed';
-
-    String nomeUnidade = 'Comprimido';
-
-    // 2. Trazendo a SUA lógica de estoque para a tela de detalhes
     final bool alertaEstoque = produto.estoqueBaixo(
       produto.idTipoProduto,
       produto.estoque,
     );
 
-    // 3. Pegando a largura total da tela do Desktop
     final double larguraTela = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -43,11 +41,9 @@ class ProdutosInfo extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        // O Align garante que o card fique na esquerda e não tente centralizar
         child: Align(
           alignment: Alignment.topLeft,
           child: Container(
-            // Aqui definimos a largura para exatamente 50% da tela!
             width: larguraTela * 0.5,
             padding: const EdgeInsets.all(32.0),
             decoration: BoxDecoration(
@@ -57,8 +53,7 @@ class ProdutosInfo extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize:
-                  MainAxisSize.min, // Faz a altura do card abraçar o conteúdo
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
                   'Informações',
@@ -83,13 +78,12 @@ class ProdutosInfo extends StatelessWidget {
 
                 Row(
                   children: [
-                    Expanded(child: _buildInfoItem('Unidade', nomeUnidade)),
+                    Expanded(child: _buildInfoItem('Unidade', nomeTipo)),
                     Expanded(
-                      // Passamos a variável do alerta para o widget desenhar a cor
                       child: _buildEstoqueItem(
                         'Estoque Atual',
                         produto.estoque.toInt().toString(),
-                        alertaEstoque, // Enviando o bool para a função abaixo!
+                        alertaEstoque,
                       ),
                     ),
                   ],
@@ -123,7 +117,6 @@ class ProdutosInfo extends StatelessWidget {
     );
   }
 
-  // Adicionamos o parâmetro `alertaEstoque` para a cor ser dinâmica
   Widget _buildEstoqueItem(String label, String value, bool alertaEstoque) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +129,6 @@ class ProdutosInfo extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            // A mágica da reatividade da cor acontece aqui!
             color: alertaEstoque
                 ? const Color(0xFFDC3545)
                 : const Color(0xFF1E293B),
