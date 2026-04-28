@@ -27,4 +27,20 @@ class ConfigDao {
       await db.update('config', config.toMap());
     }
   }
+
+  Future<String?> getImpressora() async {
+    final db = await DbHelper.instance.database;
+
+    final result = await db.query(
+      'config',
+      columns: ['impressora'],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['impressora'] as String?;
+    }
+
+    return null;
+  }
 }

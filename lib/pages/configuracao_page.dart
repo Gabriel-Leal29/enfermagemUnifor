@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:printing_ffi/models/printer.dart';
+import 'package:printing/printing.dart';
 import 'package:projeto_enfermagem_desktop/service/config_service.dart';
 import 'package:projeto_enfermagem_desktop/toast/show_toast.dart';
 import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
 
+import '../bases/page_base.dart';
 import '../exceptions/config_exception.dart';
 import '../model/config.dart';
 import '../theme/theme.dart';
@@ -112,100 +113,102 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
   }
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 800,
-    child: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: !_iniciado
-          ? const SizedBox() // gambiarra para n piscar, um CircularProgress iria dar uma piscada
-      : Form(
-        key: _formKey,
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                color: cinzaFundo,
-                child: Text("Configurações", style: textStyleBlackTituloPage)
-              ),
-
-              const SizedBox(height: 26),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+  Widget build(BuildContext context) => PageBase(
+    body: SizedBox(
+      width: 750,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: !_iniciado
+            ? const SizedBox() // gambiarra para n piscar, um CircularProgress iria dar uma piscada
+        : Form(
+          key: _formKey,
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  color: cinzaFundo,
+                  child: Text("Configurações", style: textStyleBlackTituloPage)
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Dados das Instituição", style: textStyleBlackTituloPage),
-                          const SizedBox(height: 12),
-                          CampoTextoWidget(
-                            label: "Nome da Instituição",
-                            obrigatorio: true,
-                            controller: _instituicaoController,
-                          ),
-                          const SizedBox(height: 6),
-                          CampoTextoWidget(
-                            label: "CNPJ",
-                            controller: _cnpjController,
-                            inputFormatter: [
-                              cnpjMask,
-                            ],
-                            hintText: "00.000.000/0000-00",
-                            validator: validarCnpj,
-                          ),
-                          const SizedBox(height: 6),
-                          CampoTextoWidget(
-                            label: "Endereço",
-                            controller: _enderecoController,
-                          ),
-                          const SizedBox(height: 6),
-                          CampoTextoWidget(
-                            label: "Telefone",
-                            controller: _telefoneController,
-                            hintText: "(00) 00000-0000",
-                            inputFormatter: [
-                              telefoneMask,
-                            ],
-                            validator: validarTelefone,
-                          ),
-                          const SizedBox(height: 20),
 
-                          CampoDropdownWidget<Printer?>(
-                            label: "Impressora",
-                            hintText: "Selecione uma impressora",
-                            items: [null, ..._impressoras],
-                            value: _impressoraSelecionada,
+                const SizedBox(height: 26),
 
-                            getLabel: (p) => p?.name ?? "Nenhuma",
-
-                            onSelected: (Printer? p) {
-                              setState(() {
-                                _impressoraSelecionada = p;
-                              });
-                            },
-                          ),
-
-                          const SizedBox(height: 26),
-                          ButtonAmareloWidget(
-                              texto: "Salvar Configurações",
-                              onPressed: salvarConfiguracoes,
-                          ),
-                        ],
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                ),
-              )
-            ],
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Dados das Instituição", style: textStyleBlackTituloPage),
+                            const SizedBox(height: 12),
+                            CampoTextoWidget(
+                              label: "Nome da Instituição",
+                              obrigatorio: true,
+                              controller: _instituicaoController,
+                            ),
+                            const SizedBox(height: 6),
+                            CampoTextoWidget(
+                              label: "CNPJ",
+                              controller: _cnpjController,
+                              inputFormatter: [
+                                cnpjMask,
+                              ],
+                              hintText: "00.000.000/0000-00",
+                              validator: validarCnpj,
+                            ),
+                            const SizedBox(height: 6),
+                            CampoTextoWidget(
+                              label: "Endereço",
+                              controller: _enderecoController,
+                            ),
+                            const SizedBox(height: 6),
+                            CampoTextoWidget(
+                              label: "Telefone",
+                              controller: _telefoneController,
+                              hintText: "(00) 00000-0000",
+                              inputFormatter: [
+                                telefoneMask,
+                              ],
+                              validator: validarTelefone,
+                            ),
+                            const SizedBox(height: 20),
+
+                            CampoDropdownWidget<Printer?>(
+                              label: "Impressora",
+                              hintText: "Selecione uma impressora",
+                              items: [null, ..._impressoras],
+                              value: _impressoraSelecionada,
+
+                              getLabel: (p) => p?.name ?? "Nenhuma",
+
+                              onSelected: (Printer? p) {
+                                setState(() {
+                                  _impressoraSelecionada = p;
+                                });
+                              },
+                            ),
+
+                            const SizedBox(height: 26),
+                            ButtonAmareloWidget(
+                                texto: "Salvar Configurações",
+                                onPressed: salvarConfiguracoes,
+                            ),
+                          ],
+                        ),
+                  ),
+                )
+              ],
+          ),
         ),
       ),
     ),

@@ -20,10 +20,8 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'enfermagem.db');
     print("CAMINHO DO DB: $path");
 
-    //await deleteDatabase(path);
-
     return await openDatabase(
-      path, 
+      join(await getDatabasesPath(), 'enfermagem.db'),
       version: 1,
       onCreate: _onCreate,
     );
@@ -31,26 +29,14 @@ class DbHelper {
 
   void _onCreate(db, versao) async {
     await db.execute(_fornecedor);
-    await db.execute(_tipoPaciente);
-    await db.execute(_tipoProduto);
-    await db.execute(_config);
     await db.execute(_produto);
     await db.execute(_paciente);
     await db.execute(_gerenciarEstoque);
-    //await db.execute(_consulta);
-    //await db.execute(_consultaProduto);
-    
-    await _inserirDadosIniciais(db);
-  }
-
-  Future<void> _inserirDadosIniciais(Database db) async {
-    await db.insert('tipoProduto', {'descricao': 'ML'});
-    await db.insert('tipoProduto', {'descricao': 'UND'});
-
-    await db.insert('TipoPaciente', {'descricao': 'ALUNO'});
-    await db.insert('TipoPaciente', {'descricao': 'VISITANTE'});
-    await db.insert('TipoPaciente', {'descricao': 'PROFESSOR'});
-    
+    await db.execute(_consulta);
+    await db.execute(_consultaProduto);
+    await db.execute(_tipoPaciente);
+    await db.execute(_tipoProduto);
+    await db.execute(_config);
   }
 
 String get _fornecedor => '''
@@ -66,10 +52,11 @@ String get _fornecedor => '''
   CREATE TABLE gerenciar_estoque(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero_nfe TEXT NOT NULL,
-    id_produto INTEGER,                 
+    id_fornecedor INTEGER,
+    id_produto INTEGER, 
     quantidade REAL NOT NULL,
-    situacao TEXT,
     data DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id),
     FOREIGN KEY (id_produto) REFERENCES Produto(id)
     );
 ''';
@@ -105,24 +92,34 @@ String get _paciente => '''
 ''';
 
   String get _tipoPaciente => '''
-  CREATE TABLE TipoPaciente (
+  CREATE TABLE tipo_paciente (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     descricao TEXT NOT NULL UNIQUE
     )
 ''';
 
-  //TODO: (gabriel_leal29) Vou fazer dps essas tabelas
-//   String get _consulta => '''
-//   CREATE TABLE consulta(
-//
-//   )
-// ''';
-//
-//   String get _consultaProduto => '''
-//   CREATE TABLE consultaProduto(
-//
-//   )
-// ''';
+    String get _consulta => '''
+    CREATE TABLE consulta(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_paciente INTEGER NOT NULL,
+      observacao TEXT,
+      responsavel TEXT NOT NULL,
+      demanda TEXT NOT NULL,
+      data INTEGER NOT NULL,
+      FOREIGN KEY (id_paciente) REFERENCES paciente(id)
+    )
+  ''';
+
+    String get _consultaProduto => '''
+    CREATE TABLE consulta_produto(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_produto INTEGER NOT NULL,
+      id_consulta INTEGER NOT NULL,
+      quant_produto INTEGER NOT NULL,
+      FOREIGN  KEY (id_consulta) REFERENCES consulta(id),
+      FOREIGN  KEY (id_produto) REFERENCES produto(id)
+    )
+  ''';
 
   String get _config => '''
   CREATE TABLE config (
