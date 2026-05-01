@@ -18,6 +18,7 @@ class CampoTextoWidget extends StatefulWidget{
     this.sufixoIcon,
     this.readOnly,
     this.onTap,
+    this.mostrarBordaCinza = false,
     super.key
   });
 
@@ -32,6 +33,7 @@ class CampoTextoWidget extends StatefulWidget{
   final int? maxLines;
   final Icon? sufixoIcon;
   final bool? readOnly;
+  final bool mostrarBordaCinza;
   final void Function()? onTap;
 
   @override
@@ -47,7 +49,7 @@ class _CampoTextoWidget extends State<CampoTextoWidget>{
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.label, style: textStyleBlackLabel),
-        const SizedBox(height: 6),
+        const SizedBox(height: 15),
         TextFormField(
           readOnly: widget.readOnly ?? false,
           minLines: widget.minLines,
@@ -73,11 +75,14 @@ class _CampoTextoWidget extends State<CampoTextoWidget>{
 
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: cinzaFundo,
-                  width: 1.5,
-                ),
+                borderSide: widget.mostrarBordaCinza ?
+                BorderSide(color: Colors.grey[300]!, width: 1.0)
+                    : BorderSide(
+                    color: cinzaFundo,
+                    width: 1.5,
+                  ),
               ),
+
 
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

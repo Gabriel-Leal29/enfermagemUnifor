@@ -19,7 +19,7 @@ class ConfigService {
     try{
       return await _configDao.getConfig();
     }on ConfigException catch(e){
-      throw ConfigException("Erro buscar as configurações armazenadas");
+      throw ConfigException("Erro buscar as configurações armazenadas para realizar a impressão!");
     }
   }
 
@@ -30,14 +30,5 @@ class ConfigService {
     }on ConfigException catch(e){
       throw ConfigException("Erro ao buscar as impressoras");
     }
-  }
-
-  Future<String?> nomeImpressoraSelecionada() async {
-      try{
-        final impressoraNome = await _configDao.getImpressora();
-        return impressoraNome;
-      }on ConfigException catch(e){
-        throw ConfigException("Erro ao buscar a impressora");
-      }
   }
 }

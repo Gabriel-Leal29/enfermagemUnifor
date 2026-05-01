@@ -7,7 +7,7 @@ class TipoProdutoDao {
     final db = await DbHelper.instance.database;
     
     // Busca no banco
-    final List<Map<String, dynamic>> maps = await db.query('tipoProduto', orderBy: 'descricao');
+    final List<Map<String, dynamic>> maps = await db.query('tipo_produto', orderBy: 'descricao');
     
     // Converte a lista de Maps
     return maps.map((map) => TipoProduto.fromMap(map)).toList();

@@ -66,10 +66,10 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     try{
       Config config = Config(
         nomeInstituicao: _instituicaoController.text,
-        endereco: _enderecoController.text,
-        telefone: _telefoneController.text,
+        endereco: _enderecoController.text.isEmpty ? null : _enderecoController.text,
+        telefone: _telefoneController.text.isEmpty ? null : _telefoneController.text,
         impressora: _impressoraSelecionada?.name,
-        cnpj: _cnpjController.text,
+        cnpj: _cnpjController.text.isEmpty ? null : _cnpjController.text,
       );
 
       await _configService.salvarConfiguracoes(config);

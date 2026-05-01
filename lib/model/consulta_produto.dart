@@ -16,7 +16,7 @@ class ConsultaProduto {
       'id': id,
       'id_produto': idProduto,
       'id_consulta': idConsulta,
-      'quantProduto': quantProduto,
+      'quant_produto': quantProduto,
     };
   }
 

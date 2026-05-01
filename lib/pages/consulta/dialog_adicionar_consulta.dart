@@ -1,81 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:projeto_enfermagem_desktop/exceptions/consulta_exception.dart';
+import 'package:projeto_enfermagem_desktop/toast/show_toast.dart';
 import 'package:projeto_enfermagem_desktop/widgets/button_amarelo_widget.dart';
 import 'package:projeto_enfermagem_desktop/widgets/campo_texto_widget.dart';
-import '../../model/consulta_produto.dart';
+import '../../DTO/consulta_details.dart';
+import '../../DTO/consulta_produto_details.dart';
 import '../../model/paciente.dart';
+import '../../model/produto.dart';
+import '../../service/consulta_service.dart';
 import '../../theme/theme.dart';
 import 'package:intl/intl.dart';
 
+import '../../widgets/campo_autocomplete_widget.dart';
+
 class DialogAdicionarConsulta extends StatefulWidget {
   final List<Paciente> pacientes;
+  final List<Produto> produtos;
+  final ConsultaDetails? consulta;
 
-  const DialogAdicionarConsulta({super.key, required this.pacientes});
+  const DialogAdicionarConsulta({super.key, required this.pacientes, required this.produtos, this.consulta});
 
   @override
   State<DialogAdicionarConsulta> createState() => _DialogAdicionarConsultaState();
 }
 
-class Produto {
-  final int? id;
-  final String nome;
-  final int estoque;
-  final String descricao;
-
-  Produto({
-    this.id = 2,
-    required this.nome,
-    this.estoque = 4,
-    this.descricao = "Jorge",
-  });
-}
-
 class _DialogAdicionarConsultaState extends State<DialogAdicionarConsulta> {
+  final ConsultaService _consultaService = ConsultaService();
+
   Paciente? _pacienteSelecionado;
 
-  final TextEditingController _obsController = TextEditingController();
+  final TextEditingController _demandaController = TextEditingController();
   final TextEditingController _dataController = TextEditingController();
   final TextEditingController _quantidadeController = TextEditingController();
-  late TextEditingController _estoqueController = TextEditingController();
-  final DateTime _dataSelecionada = DateTime.now();
+  final TextEditingController _estoqueController = TextEditingController();
+  final TextEditingController _obsController = TextEditingController();
+  final TextEditingController _responsavelController = TextEditingController();
+  DateTime _dataSelecionada = DateTime.now();
 
-  late List<Produto> produtos;
   Produto? _produtoSelecionado;
-  List<ConsultaProduto> _consultaProdutos = [];
+  final TextEditingController _produtoBuscaController = TextEditingController();
+  List<ConsultaProdutoDetails> _produtosAdicionados = [];
+
 
 
   @override
   void initState(){
     super.initState();
-    // produtos = [
-    //   Produto(
-    //     id: 1,
-    //     estoque: 13,
-    //     descricao: "Nome dele"
-    //   ),
-    //   Produto(
-    //       id: 2,
-    //       estoque: 3,
-    //       descricao: "Nome swss"
-    //   ),
-    //   Produto(
-    //       id: 3,
-    //       estoque: 153,
-    //       descricao: "abc wwaaaa"
-    //   ),
-    //   Produto(
-    //       id: 4,
-    //       estoque: 4,
-    //       descricao: "julima dele"
-    //   ),
-    // ];
+
+    if(widget.consulta != null){
+      // vai editar a consulta
+      final c = widget.consulta;
+
+      _demandaController.text = c!.demanda;
+      _dataController.text = c.dataFormatada;
+      _dataSelecionada = c.data;
+      _obsController.text = c.observacao ?? "";
+      _responsavelController.text = c.responsavel ?? "";
+      _pacienteSelecionado = c.paciente;
+      _produtosAdicionados = c.produtos;
+    }else{
+      setState(() {
+        _dataController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+      });
+    }
   }
 
   @override
   void dispose() {
-    _obsController.dispose();
+    _demandaController.dispose();
     _dataController.dispose();
     _quantidadeController.dispose();
     _estoqueController.dispose();
+    _obsController.dispose();
+    _responsavelController.dispose();
+    _produtoBuscaController.dispose();
     super.dispose();
   }
 
@@ -112,7 +111,89 @@ class _DialogAdicionarConsultaState extends State<DialogAdicionarConsulta> {
     if (colhida != null) {
       setState(() {
         _dataController.text = DateFormat('dd/MM/yyyy').format(colhida);
+        _dataSelecionada = colhida;
       });
+    }
+  }
+
+  void _adicionarProduto() {
+    if (_produtoSelecionado == null) return;
+
+    final quantidade = int.tryParse(_quantidadeController.text) ?? 0;
+
+    if(quantidade > _produtoSelecionado!.estoque){
+      showToast(context, message: "A quantidade não pode ser superior ao estoque do produto atual!", type: ToastType.warning);
+      return;
+    }
+
+    if (quantidade <= 0) {
+      showToast(context, message: "A quantidade deve ser maior que 0!", type: ToastType.warning);
+    }
+
+
+    setState(() {
+      final index = _produtosAdicionados.indexWhere(
+            (e) => e.produto.id == _produtoSelecionado!.id,
+      );
+
+      if (index != -1) {
+        // já existe  soma quantidade
+        _produtosAdicionados[index] = ConsultaProdutoDetails(
+          produto: _produtoSelecionado!,
+          quantidade:
+          _produtosAdicionados[index].quantidade + quantidade,
+        );
+      } else {
+        // novo produto  adiciona
+        _produtosAdicionados.add(
+          ConsultaProdutoDetails(
+            produto: _produtoSelecionado!,
+            quantidade: quantidade,
+          ),
+        );
+      }
+
+      _limparCamposProduto();
+    });
+  }
+
+  void _limparCamposProduto(){
+    _produtoBuscaController.clear();
+    _produtoSelecionado = null;
+    _quantidadeController.clear();
+    _estoqueController.clear();
+  }
+
+  void _cadastrarConsulta() async {
+    try{
+      if(_pacienteSelecionado == null){
+        showToast(context, message: "O paciente deve ser selecionado!", type: ToastType.warning);
+        return;
+      }
+
+      final consultaDto = ConsultaDetails(
+          id: widget.consulta?.id,
+          paciente: _pacienteSelecionado!,
+          responsavel: _responsavelController.text.isEmpty ? null : _responsavelController.text,
+          demanda: _demandaController.text,
+          observacao: _obsController.text.isEmpty ? null : _obsController.text,
+          data: _dataSelecionada,
+          produtos: _produtosAdicionados
+      );
+
+      if(widget.consulta != null){
+        // edita a consulta
+        await _consultaService.editarConsulta(consultaDto);
+        showToast(context, message: "Consulta editada com sucesso!", type: ToastType.success);
+      }else{
+        // cadastra consulta
+        await _consultaService.criarConsultaCompleta(consultaDto);
+        showToast(context, message: "Consulta cadastrada com sucesso!", type: ToastType.success);
+      }
+
+      Navigator.pop(context, true);
+    } on ConsultaException catch(e){
+      showToast(context, message: e.message, type: ToastType.error);
     }
   }
 
@@ -123,8 +204,8 @@ class _DialogAdicionarConsultaState extends State<DialogAdicionarConsulta> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: 750,
-        height: 720,
-        padding: const EdgeInsets.all(24.0),
+        height: 800,
+        padding: const EdgeInsets.all(6.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -143,166 +224,185 @@ class _DialogAdicionarConsultaState extends State<DialogAdicionarConsulta> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Dados da Consulta", style: textStyleBlackTituloPage,),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Dados da Consulta", style: textStyleBlackTituloPage,),
+                    
+                        const SizedBox(height: 12),
 
-                      const SizedBox(height: 12),
-
-                      Autocomplete<Paciente>(
-                        optionsBuilder: (textValue) {
-                          if (textValue.text.isEmpty) return const Iterable.empty();
-                          return widget.pacientes.where((p) => p.nome
-                              .toLowerCase()
-                              .contains(textValue.text.toLowerCase()));
-                        },
-                        displayStringForOption: (p) => p.nome,
-                        onSelected: (p) => setState(() => _pacienteSelecionado = p),
-                        fieldViewBuilder: (context, ctrl, node, onSubmitted) {
-                          return CampoTextoWidget(
-                            focusNode: node,
-                            obrigatorio: true,
-                            controller: ctrl,
-                            label: 'Paciente',
-                            hintText: "Selecione o paciente",
-                            sufixoIcon: Icon(Icons.keyboard_arrow_down),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      CampoTextoWidget(
-                          label: "Data Consulta",
-                          hintText: "dd/MM/aaaa",
-                          controller: _dataController,
-                          onTap: () => _selecionarData(context),
-                          readOnly: true,
-                          sufixoIcon: Icon(Icons.calendar_month, size: 22),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      CampoTextoWidget(
-                          label: "Queixa",
-                          minLines: 3,
-                          maxLines: 6,
-                          hintText: "Descreva a queixa do paciente",
-                          controller: _obsController
-                      ),
-
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Autocomplete<Produto>(
-                              optionsBuilder: (textValue) {
-                                if (textValue.text.isEmpty) return const Iterable.empty();
-                                return produtos.where((p) => p.descricao
-                                    .toLowerCase()
-                                    .contains(textValue.text.toLowerCase()));
-                              },
-                              displayStringForOption: (p) => p.descricao,
-                              onSelected: (p) => setState(() {
-                                _produtoSelecionado = p;
-                                _estoqueController.text = p.estoque.toString();
-                              }),
-                              fieldViewBuilder: (context, ctrl, node, onSubmitted) {
-                                return CampoTextoWidget(
-                                  focusNode: node,
-                                  controller: ctrl,
-                                  label: 'Produtos / Medicamentos Utilizados',
-                                  hintText: "Selecione o medicamento",
-                                  sufixoIcon: Icon(Icons.keyboard_arrow_down),
-                                );
-                              },
-                            ),
-                          ),
-
-                          SizedBox(width: 8),
-
-                          SizedBox(
-                            width: 100,
-                            child: CampoTextoWidget(
-                              label: "Estoque",
-                              readOnly: true,
-                              hintText:"0",
-                              controller: _estoqueController,
-                            ),
-                          ),
-
-                          SizedBox(width: 8),
-
-                          SizedBox(
-                            width: 100,
-                            child: CampoTextoWidget(
-                              label: "Quantidade",
-                              hintText:"0",
-                              controller: _quantidadeController,
-                            ),
-                          ),
-
-                          SizedBox(width: 8),
-
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 38), // espaço do label
-                              SizedBox(
-                                width: 60,
-                                height: 50,
-                                child: ButtonAmareloWidget(
-                                  texto: "+",
-                                  onPressed: () => null //vai adicionar o produto na consulta,
-                                ),
+                        CampoAutocompleteWidget<Paciente>(
+                          label: "Paciente",
+                          valorInicial: _pacienteSelecionado,
+                          items: widget.pacientes,
+                          obrigatorio: true,
+                          hintText: "Selecione o paciente",
+                          getLabel: (p) => p.nome,
+                          onSelected: (p) {
+                            setState(() {
+                              _pacienteSelecionado = p;
+                            });
+                          },
+                        ),
+                    
+                        const SizedBox(height: 6),
+                    
+                        CampoTextoWidget(
+                            label: "Data Consulta",
+                            hintText: "dd/MM/aaaa",
+                            controller: _dataController,
+                            onTap: () => _selecionarData(context),
+                            readOnly: true,
+                            sufixoIcon: Icon(Icons.calendar_month, size: 22),
+                        ),
+                    
+                        const SizedBox(height: 6),
+                    
+                        CampoTextoWidget(
+                            label: "Responsável",
+                            hintText: "Responsável pelo paciente",
+                            controller: _responsavelController
+                        ),
+                    
+                        const SizedBox(height: 6),
+                    
+                        CampoTextoWidget(
+                            label: "Queixa",
+                            minLines: 3,
+                            maxLines: 6,
+                            hintText: "Descreva a queixa do paciente",
+                            controller: _demandaController
+                        ),
+                    
+                        const SizedBox(height: 6),
+                    
+                        CampoTextoWidget(
+                            label: "Observações",
+                            controller: _obsController
+                        ),
+                    
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: CampoAutocompleteWidget<Produto>(
+                                label: "Produtos / Medicamentos Utilizados",
+                                items: widget.produtos,
+                                controller: _produtoBuscaController,
+                                hintText: "Selecione o medicamento...",
+                                getLabel: (p) => p.nome,
+                                onSelected: (p) {
+                                  setState(() {
+                                    _produtoSelecionado = p;
+                                    _estoqueController.text = p.estoque.toString();
+                                  });
+                                },
                               ),
-                            ],
-                          )
-                        ]
-                      ),
-
-                      Column(
-                        children: _consultaProdutos.map((produto) {
-                          return Container(
-                            margin: const EdgeInsets.only(top: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: cinzaFundo,
-                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Row(
+                    
+                            SizedBox(width: 8),
+                    
+                            SizedBox(
+                              width: 120,
+                              child: CampoTextoWidget(
+                                label: "Estoque Atual",
+                                readOnly: true,
+                                hintText:"0",
+                                controller: _estoqueController,
+                              ),
+                            ),
+                    
+                            SizedBox(width: 8),
+                    
+                            SizedBox(
+                              width: 100,
+                              child: CampoTextoWidget(
+                                label: "Qtde. Gasta",
+                                hintText:"0",
+                                maxLines: 1,
+                                controller: _quantidadeController,
+                                inputFormatter: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
+                              ),
+                            ),
+                    
+                            SizedBox(width: 8),
+                    
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Text(
-                                    produto.id.toString(),
-                                    style: textStyleBlackLabel,
+                                const SizedBox(height: 50), // espaço do label
+                                SizedBox(
+                                  width: 60,
+                                  height: 50,
+                                  child: ButtonAmareloWidget(
+                                    texto: "+",
+                                    onPressed: () => _adicionarProduto(), //vai adicionar o produto na consulta,
                                   ),
                                 ),
-
-                                Text(
-                                  "Qtd: ${produto.quantProduto}",
-                                  style: textStyleBlackLabel,
-                                ),
-
-                                const SizedBox(width: 8),
-
-                                IconButton(
-                                  icon: const Icon(Icons.close, size: 18),
-                                  onPressed: () {
-                                    setState(() {
-                                      _consultaProdutos.remove(produto);
-                                    });
-                                  },
-                                )
                               ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                            )
+                          ]
+                        ),
+                    
+                        const SizedBox(height: 8),
 
-                      const SizedBox(height: 6),
-                    ],
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: _produtosAdicionados.length,
+                          itemBuilder: (context, index) {
+                            final p = _produtosAdicionados[index];
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: cinzaFundo,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      p.produto.nome,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Text("Qtd: ${p.quantidade}"),
+                                  IconButton(
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () {
+                                      setState(() {
+                                        _produtosAdicionados.removeAt(index);
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                    
+                        const SizedBox(height: 8),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ButtonAmareloWidget(texto: widget.consulta != null ? "Voltar" : "Cancelar", onPressed: () => Navigator.pop(context, false), isCancelamento: true,),
+
+                            SizedBox(width: 24),
+
+                            ButtonAmareloWidget(texto: widget.consulta != null ? "Editar" : "Salvar", onPressed: _cadastrarConsulta),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                   ),
                 ),
               ),

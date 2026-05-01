@@ -2,15 +2,15 @@ class Consulta {
   final int? id;
   final int idPaciente;
   final String? observacao;
-  final String responsavel;
+  final String? responsavel;
   final String demanda;
   final DateTime data;
 
   Consulta({
     required this.idPaciente,
-    required this.responsavel,
     required this.demanda,
     required this.data,
+    this.responsavel,
     this.observacao,
     this.id
   });
@@ -31,6 +31,7 @@ class Consulta {
       id: map['id'],
       idPaciente: map['id_paciente'],
       responsavel: map['responsavel'],
+      observacao: map['observacao'],
       demanda: map['demanda'],
       data: DateTime.fromMillisecondsSinceEpoch(map['data']),
     );

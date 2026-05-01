@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_enfermagem_desktop/bases/home_base.dart';
-import 'package:projeto_enfermagem_desktop/pages/consulta/consulta_page.dart';
+import 'package:projeto_enfermagem_desktop/pages/produtos_page.dart';
 import 'package:projeto_enfermagem_desktop/theme/theme.dart';
+import '../pages/movimentacoes_page.dart';
 
 import '../bases/page_base.dart';
 import 'configuracao_page.dart';
+import 'consulta/consulta_page.dart';
 import 'pacientes_page.dart';
-import 'fornecedores_page.dart'; 
+import 'fornecedores_page.dart';
 
 class Home extends StatefulWidget{
   const Home({super.key});
@@ -16,19 +18,18 @@ class Home extends StatefulWidget{
 }
 
 class _HomeState extends State<Home>{
-  
-  
+
   List<Widget> get _opcoesMenuLateral => [
     const Center(child: PageBase(body: Text("Dashboard"))), // 0
     const PacientesPage(), // 1
     const ConsultaPage(), // 2
-    const Center(child: PageBase(body: Text("Produtos"))), // 3 
-    const Center(child: PageBase(body: Text("Entradas"))), // 4 
-    const FornecedoresPage(), // 5 
-    const ConfiguracaoPage(), // 6
+    const Center(child: PageBase(body: ProdutosPage())), // 3
+    const Center(child: PageBase(body: MovimentacoesPage())), // 4
+    const FornecedoresPage(), // 5
+    const  ConfiguracaoPage(), // 6
   ];
 
-  int _selectedIndex = 5; 
+  int _selectedIndex = 0;
   final String titulo = "UNIFOR-MG";
   final String subTitulo = "ENFERMAGEM";
 
@@ -38,13 +39,13 @@ class _HomeState extends State<Home>{
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         children: [
           _buildBarraLateralHeader(titulo, subTitulo, Icons.favorite),
-          
-          
+
+
           _buildMenuItem("Dashboard", Icons.dashboard_rounded, 0),
           _buildMenuItem("Pacientes", Icons.people_alt_rounded, 1),
           _buildMenuItem("Consultas", Icons.medical_services_outlined, 2),
           _buildMenuItem("Produtos", Icons.inventory_2_outlined, 3),
-          _buildMenuItem("Entradas", Icons.move_to_inbox_outlined, 4),
+          _buildMenuItem("Movimentações", Icons.move_to_inbox_outlined, 4),
           _buildMenuItem("Fornecedores", Icons.local_shipping_outlined, 5),
           _buildMenuItem("Configurações", Icons.settings_rounded, 6),
         ],

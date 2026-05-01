@@ -6,6 +6,7 @@ class ButtonAmareloWidget extends StatefulWidget{
   const ButtonAmareloWidget({
     required this.texto,
     required this.onPressed,
+    this.isCancelamento = false,
     this.icone,
     super.key
   });
@@ -13,6 +14,7 @@ class ButtonAmareloWidget extends StatefulWidget{
   final String texto;
   final VoidCallback onPressed;
   final IconData? icone;
+  final bool isCancelamento;
 
   @override
   State<StatefulWidget> createState() => _ButtonAmareloWidgetState();
@@ -24,7 +26,7 @@ class _ButtonAmareloWidgetState extends State<ButtonAmareloWidget>{
         onPressed: widget.onPressed,
         style: ElevatedButton.styleFrom(
           enabledMouseCursor: MouseCursor.uncontrolled,
-          backgroundColor: amareloUnifor,
+          backgroundColor: widget.isCancelamento ? cinzaFundo : amareloUnifor,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

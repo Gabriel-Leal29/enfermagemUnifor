@@ -5,36 +5,33 @@ class ConsultaProdutoDao {
   Future<void> inserir(ConsultaProduto consultaProduto) async {
     final db = await DbHelper.instance.database;
 
-    return await db.insert('consulta', consultaProduto.toMap());
+    return await db.insert('consulta_produto', consultaProduto.toMap());
   }
 
   Future<List<ConsultaProduto>> listarTodos() async {
     final db = await DbHelper.instance.database;
 
-    final List<Map<String, dynamic>> result = await db.query('consulta');
+    final List<Map<String, dynamic>> result = await db.query('consulta_produto');
 
     return result.map((map) => ConsultaProduto.fromMap(map)).toList();
   }
 
-  Future<void> atualizar(ConsultaProduto consultaProduto) async {
+  Future<void> deletarPorConsulta(int idConsulta) async {
     final db = await DbHelper.instance.database;
-    return await db.update(
-      'consultaProduto',
-      consultaProduto.toMap(),
-      where: 'id = ?',
-      whereArgs: [consultaProduto.id],
+
+    await db.delete(
+      'consulta_produto',
+      where: 'id_consulta = ?',
+      whereArgs: [idConsulta],
     );
   }
 
-
-  // TODO: analisar esse método
-
-  // Future<void> excluir(int id) async {
-  //   final db = await DbHelper.instance.database;
-  //   return await db.delete(
-  //     'consulta',
-  //     where: 'id = ?',
-  //     whereArgs: [id],
-  //   );
-  // }
+  Future<void> excluir(int id) async {
+    final db = await DbHelper.instance.database;
+    return await db.delete(
+      'consulta_produto',
+      where: 'id_consulta = ?',
+      whereArgs: [id],
+    );
+  }
 }

@@ -1,4 +1,4 @@
-import '../pages/consulta/dialog_adicionar_consulta.dart';
+import '../model/produto.dart';
 
 class ConsultaProdutoDetails {
   final Produto produto;
