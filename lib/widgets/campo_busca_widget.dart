@@ -17,42 +17,51 @@ class CampoBuscaWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: texto,
-        prefixIcon: Icon(prefixIcon, color: Colors.grey),
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 38),
+          TextField(
+            controller: controller,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              hintText: texto,
+              prefixIcon: Icon(prefixIcon, color: Colors.grey),
 
-        suffixIcon: Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: IconButton(
-            icon: const Icon(Icons.clear, color: Colors.grey),
-            onPressed: () {
-              controller.clear();
-              if (onChanged != null) {
-                onChanged!('');
-              }
-            },
+              suffixIcon: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.grey),
+                  onPressed: () {
+                    controller.clear();
+                    if (onChanged != null) {
+                      onChanged!('');
+                    }
+                  },
+                ),
+              ),
+
+              hoverColor: Colors.transparent,
+              filled: true,
+              fillColor: cinzaFundo,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[300]!, width: 1.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: azulUnifor, width: 2.0),
+              ),
+            ),
           ),
-        ),
-
-        hoverColor: Colors.transparent,
-        filled: true,
-        fillColor: cinzaFundo,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!, width: 1.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: azulUnifor, width: 2.0),
-        ),
+        ],
       ),
     );
   }

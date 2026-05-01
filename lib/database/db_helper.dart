@@ -20,10 +20,8 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'enfermagem.db');
     print("CAMINHO DO DB: $path");
 
-    //await deleteDatabase(path);
-
     return await openDatabase(
-      path, 
+      join(await getDatabasesPath(), 'enfermagem.db'),
       version: 1,
       onCreate: _onCreate,
     );
@@ -37,23 +35,213 @@ class DbHelper {
     await db.execute(_produto);
     await db.execute(_paciente);
     await db.execute(_gerenciarEstoque);
-    //await db.execute(_consulta);
-    //await db.execute(_consultaProduto);
-    
+    await db.execute(_consulta);
+    await db.execute(_consultaProduto);
+
     await _inserirDadosIniciais(db);
+    await _preencherBancoTestes(db);
   }
 
   Future<void> _inserirDadosIniciais(Database db) async {
-    await db.insert('tipoProduto', {'descricao': 'ML'});
-    await db.insert('tipoProduto', {'descricao': 'UND'});
+    await db.insert('tipo_produto', {'descricao': 'ML'});
+    await db.insert('tipo_produto', {'descricao': 'UND'});
 
-    await db.insert('TipoPaciente', {'descricao': 'ALUNO'});
-    await db.insert('TipoPaciente', {'descricao': 'VISITANTE'});
-    await db.insert('TipoPaciente', {'descricao': 'PROFESSOR'});
-    
+    await db.insert('tipo_paciente', {'descricao': 'ALUNO'});
+    await db.insert('tipo_paciente', {'descricao': 'VISITANTE'});
+    await db.insert('tipo_paciente', {'descricao': 'PROFESSOR'});
   }
 
-String get _fornecedor => '''
+  Future<void> _preencherBancoTestes(Database db) async {
+    // 🏢 FORNECEDOR
+    final fornecedorId = await db.insert('fornecedor', {
+      'nome': 'Fornecedor Geral',
+      'razao_social': 'Fornecedor Geral LTDA',
+      'cnpj': '12345678000199'
+    });
+
+    // 🧑 PACIENTES
+    final pacientesIds = <int>[];
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'João Silva',
+      'matricula': '2023001',
+      'cpf': '11111111111',
+      'id_tipo_paciente': 1,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Maria Souza',
+      'matricula': '2023002',
+      'cpf': '22222222222',
+      'id_tipo_paciente': 2,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Carlos Oliveira',
+      'matricula': '2023003',
+      'cpf': '33333333333',
+      'id_tipo_paciente': 3,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Ana Lima',
+      'matricula': '2023004',
+      'cpf': '44444444444',
+      'id_tipo_paciente': 1,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Pedro Santos',
+      'matricula': '2023005',
+      'cpf': '55555555555',
+      'id_tipo_paciente': 2,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Juliana Costa',
+      'matricula': '2023006',
+      'cpf': '66666666666',
+      'id_tipo_paciente': 3,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Fernanda Rocha',
+      'matricula': '2023007',
+      'cpf': '77777777777',
+      'id_tipo_paciente': 1,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Lucas Alves',
+      'matricula': '2023008',
+      'cpf': '88888888888',
+      'id_tipo_paciente': 2,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Patrícia Gomes',
+      'matricula': '2023009',
+      'cpf': '99999999999',
+      'id_tipo_paciente': 3,
+    }));
+
+    pacientesIds.add(await db.insert('paciente', {
+      'nome': 'Bruno Martins',
+      'matricula': '2023010',
+      'cpf': '10101010101',
+      'id_tipo_paciente': 1,
+    }));
+
+    // 💊 PRODUTOS
+    final produtosIds = <int>[];
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Dipirona',
+      'estoque': 100,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 1,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Paracetamol',
+      'estoque': 80,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 1,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Ibuprofeno',
+      'estoque': 60,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 1,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Amoxicilina',
+      'estoque': 40,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 2,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Soro Fisiológico',
+      'estoque': 120,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 1,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Álcool 70%',
+      'estoque': 200,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 2,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Seringa 10ml',
+      'estoque': 150,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 2,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Luvas Descartáveis',
+      'estoque': 300,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 2,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Gaze',
+      'estoque': 500,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 2,
+    }));
+
+    produtosIds.add(await db.insert('produto', {
+      'nome': 'Termômetro',
+      'estoque': 30,
+      'id_fornecedor': fornecedorId,
+      'id_tipo_produto': 2,
+    }));
+
+    // 📋 CONSULTAS
+    final consultasIds = <int>[];
+
+    for (int i = 0; i < 15; i++) {
+      final id = await db.insert('consulta', {
+        'id_paciente': pacientesIds[i % pacientesIds.length],
+        'observacao': i % 2 == 0 ? 'Observação $i' : null,
+        'responsavel': 'Enfermeiro $i',
+        'demanda': 'Demanda $i',
+        'data': DateTime.now()
+            .subtract(Duration(days: i))
+            .millisecondsSinceEpoch,
+      });
+
+      consultasIds.add(id);
+    }
+
+    // 🔗 CONSULTA_PRODUTO
+    for (int i = 0; i < consultasIds.length; i++) {
+      await db.insert('consulta_produto', {
+        'id_consulta': consultasIds[i],
+        'id_produto': produtosIds[i % produtosIds.length],
+        'quant_produto': (i % 5) + 1,
+      });
+
+      // adiciona mais um produto em algumas consultas
+      if (i % 2 == 0) {
+        await db.insert('consulta_produto', {
+          'id_consulta': consultasIds[i],
+          'id_produto': produtosIds[(i + 1) % produtosIds.length],
+          'quant_produto': 2,
+        });
+      }
+    }
+  }
+
+  String get _fornecedor => '''
   CREATE TABLE fornecedor (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
@@ -86,7 +274,7 @@ String get _fornecedor => '''
   )
 ''';
 
-String get _paciente => '''
+  String get _paciente => '''
   CREATE TABLE paciente(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
@@ -98,31 +286,41 @@ String get _paciente => '''
 ''';
 
   String get _tipoProduto => '''
-  CREATE TABLE tipoProduto (
+  CREATE TABLE tipo_produto (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     descricao TEXT NOT NULL UNIQUE
     )
 ''';
 
   String get _tipoPaciente => '''
-  CREATE TABLE TipoPaciente (
+  CREATE TABLE tipo_paciente (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     descricao TEXT NOT NULL UNIQUE
     )
 ''';
 
-  //TODO: (gabriel_leal29) Vou fazer dps essas tabelas
-//   String get _consulta => '''
-//   CREATE TABLE consulta(
-//
-//   )
-// ''';
-//
-//   String get _consultaProduto => '''
-//   CREATE TABLE consultaProduto(
-//
-//   )
-// ''';
+    String get _consulta => '''
+    CREATE TABLE consulta(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_paciente INTEGER NOT NULL,
+      observacao TEXT,
+      responsavel TEXT,
+      demanda TEXT NOT NULL,
+      data INTEGER NOT NULL,
+      FOREIGN KEY (id_paciente) REFERENCES paciente(id)
+    )
+  ''';
+
+    String get _consultaProduto => '''
+    CREATE TABLE consulta_produto(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_produto INTEGER NOT NULL,
+      id_consulta INTEGER NOT NULL,
+      quant_produto INTEGER NOT NULL,
+      FOREIGN  KEY (id_consulta) REFERENCES consulta(id),
+      FOREIGN  KEY (id_produto) REFERENCES produto(id)
+    )
+  ''';
 
   String get _config => '''
   CREATE TABLE config (

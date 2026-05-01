@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:projeto_enfermagem_desktop/pages/home.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:window_manager/window_manager.dart';
@@ -19,8 +20,8 @@ void main() async {
 
   // definindo  tamanho mínimo da tela
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(1200, 800),
-    minimumSize: Size(1100, 700), // TODO: tamanho mínimo da tela, pode variar com o decorrer do projeto
+    size: Size(1400, 800),
+    minimumSize: Size(1400, 700), // TODO: tamanho mínimo da tela, pode variar com o decorrer do projeto
     center: true,
     title: "Enfermagem - UNIFOR",
   );
@@ -41,6 +42,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('pt', 'BR'),
+      ],
+
       home: Home(),
     );
   }

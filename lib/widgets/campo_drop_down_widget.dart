@@ -27,18 +27,12 @@ class CampoDropdownWidget<T> extends StatefulWidget {
 
 class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
   late FocusNode _focusNode;
-  bool _isFocused = false;
   bool _isMenuOpen = false;
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
-    });
   }
 
   @override
@@ -62,7 +56,6 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                 Text(widget.label, style: textStyleBlackLabel),
               ],
             ),
-            const SizedBox(height: 6),
 
             /// Dropdown
             Focus(
@@ -177,9 +170,15 @@ class _DropdownItemState<T> extends State<_DropdownItem<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
+    return MouseRegion
+      (onEnter: (_) {
+      if (!mounted) return;
+      setState(() => _hover = true);
+    },
+      onExit: (_) {
+        if (!mounted) return;
+        setState(() => _hover = false);
+      },
       child: Container(
         width: double.infinity,
         height: 40,
