@@ -144,4 +144,24 @@ class ConsultaDao {
       whereArgs: [id],
     );
   }
+
+  // Dashboard Methods
+  Future<int> getAtendimentosHoje() async {
+    final db = await DbHelper.instance.database;
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59, 999).millisecondsSinceEpoch;
+    final result = await db.rawQuery('SELECT COUNT(*) as total FROM consulta WHERE data >= ? AND data <= ?', [startOfDay, endOfDay]);
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<List<Map<String, dynamic>>> getAtendimentosUltimosDias(int dias) async {
+    final db = await DbHelper.instance.database;
+    final now = DateTime.now();
+    final pastDate = now.subtract(Duration(days: dias - 1));
+    final startOfPastDate = DateTime(pastDate.year, pastDate.month, pastDate.day).millisecondsSinceEpoch;
+    
+    final result = await db.query('consulta', where: 'data >= ?', whereArgs: [startOfPastDate]);
+    return result;
+  }
 }

@@ -37,12 +37,15 @@ class DbHelper {
     await db.execute(_gerenciarEstoque);
     await db.execute(_consulta);
     await db.execute(_consultaProduto);
+    await db.execute(_usuario);
 
     await _inserirDadosIniciais(db);
     await _preencherBancoTestes(db);
   }
 
   Future<void> _inserirDadosIniciais(Database db) async {
+    await db.insert('usuario', {'login': 'admin', 'senha': '123'});
+
     await db.insert('tipo_produto', {'descricao': 'ML'});
     await db.insert('tipo_produto', {'descricao': 'UND'});
 
@@ -330,6 +333,14 @@ class DbHelper {
     endereco TEXT,
     telefone TEXT,
     impressora TEXT
+    )
+''';
+
+  String get _usuario => '''
+  CREATE TABLE usuario (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    login TEXT NOT NULL UNIQUE,
+    senha TEXT NOT NULL
     )
 ''';
 }

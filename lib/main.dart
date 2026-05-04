@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:projeto_enfermagem_desktop/pages/home.dart';
+import 'package:projeto_enfermagem_desktop/pages/login_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -51,7 +52,7 @@ class MyApp extends StatelessWidget {
         Locale('pt', 'BR'),
       ],
 
-      home: Home(),
+      home: const LoginPage(),
     );
   }
 }

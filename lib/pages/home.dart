@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_enfermagem_desktop/bases/home_base.dart';
 import 'package:projeto_enfermagem_desktop/pages/produtos_page.dart';
 import 'package:projeto_enfermagem_desktop/theme/theme.dart';
+import 'package:projeto_enfermagem_desktop/pages/dashboard_page.dart';
 import '../pages/movimentacoes_page.dart';
 
 import '../bases/page_base.dart';
@@ -20,7 +21,7 @@ class Home extends StatefulWidget{
 class _HomeState extends State<Home>{
 
   List<Widget> get _opcoesMenuLateral => [
-    const Center(child: PageBase(body: Text("Dashboard"))), // 0
+    const Center(child: DashboardPage()), // 0
     const PacientesPage(), // 1
     const ConsultaPage(), // 2
     const Center(child: PageBase(body: ProdutosPage())), // 3
