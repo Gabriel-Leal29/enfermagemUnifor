@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() async {
     if (_usuarioController.text.trim().isEmpty || _senhaController.text.trim().isEmpty) {
-      showToastInfo("Preencha o usuário e a senha.");
+      showToastInfo(context, "Preencha o usuário e a senha.");
       return;
     }
 
@@ -40,7 +40,9 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } else {
-      showToastError("Usuário ou senha inválidos.");
+      if (mounted) {
+        showToastError(context, "Usuário ou senha inválidos.");
+      }
     }
   }
 
