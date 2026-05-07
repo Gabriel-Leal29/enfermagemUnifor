@@ -20,7 +20,7 @@ class DbHelper {
     String path = join(await getDatabasesPath(), 'enfermagem.db');
     print("CAMINHO DO DB: $path");
 
-    //await deleteDatabase(path);
+    await deleteDatabase(path);
 
     return await openDatabase(
       path, 
