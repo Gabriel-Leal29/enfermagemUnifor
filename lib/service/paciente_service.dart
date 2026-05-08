@@ -1,3 +1,4 @@
+import 'package:cpf_cnpj_validator/cpf_validator.dart';
 import '../dao/paciente_dao.dart';
 import '../exceptions/paciente_exception.dart';
 import '../model/paciente.dart';
@@ -15,16 +16,18 @@ class PacienteService {
       throw PacienteException("O CPF é obrigatório.");
     }
 
+    if (!CPFValidator.isValid(paciente.cpf)) {
+      throw PacienteException("O CPF informado é inválido.");
+    }
+
     try {
       if (paciente.id == null) {
         
         await _dao.inserir(paciente);
       } else {
-        // se tem ID, é edição
         await _dao.atualizar(paciente);
       }
     } catch (e) {
-      // captura o erro do SQLite caso o CPF já exista na tabela (regra UNIQUE)
       if (e.toString().contains('UNIQUE constraint failed: paciente.cpf')) {
         throw PacienteException("Já existe um paciente cadastrado com este CPF.");
       }

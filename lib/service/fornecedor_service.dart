@@ -1,3 +1,4 @@
+import 'package:cpf_cnpj_validator/cnpj_validator.dart';
 import '../dao/fornecedor_dao.dart';
 import '../exceptions/fornecedor_exception.dart';
 import '../model/fornecedor.dart';
@@ -14,6 +15,10 @@ class FornecedorService {
       throw FornecedorException("O CNPJ é obrigatório.");
     }
 
+    if (!CNPJValidator.isValid(fornecedor.cnpj)) {
+      throw FornecedorException("O CNPJ informado é inválido.");
+    }
+
     try {
       if (fornecedor.id == null) {
         await _dao.inserir(fornecedor);
@@ -21,7 +26,6 @@ class FornecedorService {
         await _dao.atualizar(fornecedor);
       }
     } catch (e) {
-      // barra CNPJ duplicado usando a trava do SQLite
       if (e.toString().contains('UNIQUE constraint failed: fornecedor.cnpj')) {
         throw FornecedorException("Já existe um fornecedor cadastrado com este CNPJ.");
       }

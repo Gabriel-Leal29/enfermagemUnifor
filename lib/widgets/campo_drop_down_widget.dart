@@ -126,11 +126,12 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
+Expanded(
                             child: Text(
-                              // --- CORREÇÃO DA TELA VERMELHA AQUI ---
-                              (widget.getLabel != null && widget.value != null)
-                                  ? widget.getLabel!(widget.value as T)
+                              widget.value != null
+                                  ? (widget.getLabel != null 
+                                      ? widget.getLabel!(widget.value as T) 
+                                      : widget.value.toString())
                                   : (widget.hintText ?? "Selecione"),
                               overflow: TextOverflow.ellipsis,
                             ),
