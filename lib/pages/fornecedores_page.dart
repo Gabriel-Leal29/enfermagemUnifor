@@ -7,6 +7,7 @@ import '../theme/theme.dart';
 import '../toast/show_toast.dart';
 import '../widgets/button_amarelo_widget.dart';
 import '../widgets/campo_texto_widget.dart';
+import '../widgets/campo_busca_widget.dart';
 
 class FornecedoresPage extends StatefulWidget {
   const FornecedoresPage({super.key});
@@ -27,7 +28,6 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
   void initState() {
     super.initState();
     _carregarDados();
-    _buscaController.addListener(_filtrarFornecedores);
   }
 
   Future<void> _carregarDados() async {
@@ -57,7 +57,6 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
 
   @override
   void dispose() {
-    _buscaController.removeListener(_filtrarFornecedores);
     _buscaController.dispose();
     super.dispose();
   }
@@ -76,7 +75,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: cinzaFundo,
+          backgroundColor: Colors.white, // Padronizado para branco
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text(fornecedor == null ? "Novo Fornecedor" : "Editar Fornecedor", style: textStyleBlackTituloPage),
           content: SizedBox(
@@ -89,16 +88,19 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                     label: "Nome Fantasia",
                     controller: nomeController,
                     obrigatorio: true,
+                    mostrarBordaCinza: true, // Ativado
                   ),
                   CampoTextoWidget(
                     label: "Razão Social",
                     controller: razaoSocialController,
+                    mostrarBordaCinza: true, // Ativado
                   ),
                   CampoTextoWidget(
                     label: "CNPJ",
                     controller: cnpjController,
                     inputFormatter: [cnpjMask],
                     obrigatorio: true,
+                    mostrarBordaCinza: true, // Ativado
                   ),
                 ],
               ),
@@ -190,24 +192,11 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
           
           const SizedBox(height: 24),
 
-          
-          TextField(
+          CampoBuscaWidget(
             controller: _buscaController,
-            decoration: InputDecoration(
-              hintText: "Buscar por nome ou CNPJ...",
-              prefixIcon: const Icon(Icons.search, color: menuItemNaoSelecionado),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: azulUnifor),
-              ),
-            ),
+            texto: "Buscar por nome ou CNPJ...",
+            prefixIcon: Icons.search_rounded,
+            onChanged: (value) => _filtrarFornecedores(),
           ),
 
           const SizedBox(height: 24),
@@ -227,6 +216,15 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: DataTable(
+                  showCheckboxColumn: false,
+                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (states.contains(WidgetState.hovered)) {
+                        return azulSelecionadoDropDown.withOpacity(0.3);
+                      }
+                      return null;
+                    },
+                  ),
                   headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
                   dataRowMinHeight: 60,
                   dataRowMaxHeight: 60,
@@ -239,6 +237,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                   ],
                   rows: _fornecedoresFiltrados.map((fornecedor) {
                     return DataRow(
+                      onSelectChanged: (_) {}, // Habilita o efeito visual de seleção/hover
                       cells: [
                         DataCell(Text(fornecedor.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
                         DataCell(Text(fornecedor.razaoSocial ?? '-')), 

@@ -8,6 +8,7 @@ import '../toast/show_toast.dart';
 import '../widgets/button_amarelo_widget.dart';
 import '../widgets/campo_drop_down_widget.dart';
 import '../widgets/campo_texto_widget.dart';
+import '../widgets/campo_busca_widget.dart';
 
 class PacientesPage extends StatefulWidget {
   const PacientesPage({super.key});
@@ -22,7 +23,7 @@ class _PacientesPageState extends State<PacientesPage> {
   final List<String> _filtros = ['Todos', 'Aluno', 'Funcionário', 'Visitante'];
 
   final PacienteService _pacienteService = PacienteService();
-  List<Paciente> _pacientes = []; // Esta guarda TODOS do banco
+  List<Paciente> _pacientes = []; 
   List<Paciente> _pacientesFiltrados = []; 
   bool _carregando = true;
 
@@ -30,8 +31,6 @@ class _PacientesPageState extends State<PacientesPage> {
   void initState() {
     super.initState();
     _carregarDados(); 
-    
-    _buscaController.addListener(_filtrarPacientes); 
   }
 
   Future<void> _carregarDados() async {
@@ -49,7 +48,6 @@ class _PacientesPageState extends State<PacientesPage> {
 
   @override
   void dispose() {
-    _buscaController.removeListener(_filtrarPacientes);
     _buscaController.dispose();
     super.dispose();
   }
@@ -57,11 +55,9 @@ class _PacientesPageState extends State<PacientesPage> {
   void _filtrarPacientes() {
     setState(() {
       _pacientesFiltrados = _pacientes.where((paciente) {
-        // 1. Filtro por Tipo (Dropdown)
         final tipoPaciente = _getDescricaoTipo(paciente.idTipoPaciente);
         final passouFiltroTipo = _filtroAtual == 'Todos' || tipoPaciente == _filtroAtual;
 
-        // 2. Filtro por Texto (Nome ou CPF)
         final termoBusca = _buscaController.text.toLowerCase();
         final passouFiltroTexto = termoBusca.isEmpty || 
                                   paciente.nome.toLowerCase().contains(termoBusca) || 
@@ -110,12 +106,13 @@ class _PacientesPageState extends State<PacientesPage> {
     );
   }
 
-  void _mostrarModalPaciente({Paciente? paciente}) {
+void _mostrarModalPaciente({Paciente? paciente}) {
     final nomeController = TextEditingController(text: paciente?.nome ?? "");
     final cpfController = TextEditingController(text: paciente?.cpf ?? "");
     final matriculaController = TextEditingController(text: paciente?.matricula ?? "");
     
-    String tipoSelecionado = paciente != null ? _getDescricaoTipo(paciente.idTipoPaciente) : 'Aluno';
+    // 1. Declarada FORA do builder e como "String?" (podendo ser nula) para iniciar vazia
+    String? tipoSelecionado = paciente != null ? _getDescricaoTipo(paciente.idTipoPaciente) : null;
 
     var cpfMask = MaskTextInputFormatter(
       mask: '###.###.###-##',
@@ -126,9 +123,10 @@ class _PacientesPageState extends State<PacientesPage> {
       context: context,
       builder: (context) {
         return StatefulBuilder(
-          builder: (context, setStateModal) {
+          // 2. O setStateModal que comanda a atualização do Modal está aqui
+          builder: (context, setStateModal) { 
             return AlertDialog(
-              backgroundColor: cinzaFundo,
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               title: Text(paciente == null ? "Novo Paciente" : "Editar Paciente", style: textStyleBlackTituloPage),
               content: SizedBox(
@@ -141,25 +139,32 @@ class _PacientesPageState extends State<PacientesPage> {
                         label: "Nome Completo",
                         controller: nomeController,
                         obrigatorio: true,
+                        mostrarBordaCinza: true,
                       ),
                       CampoTextoWidget(
                         label: "CPF",
                         controller: cpfController,
                         inputFormatter: [cpfMask],
                         obrigatorio: true,
+                        mostrarBordaCinza: true,
                       ),
-                      CampoDropdownWidget<String>(
+CampoDropdownWidget<String>(
+                        key: ValueKey(tipoSelecionado), // <-- ADICIONE ESTA LINHA
                         label: "Tipo de Paciente",
+                        hintText: "Selecione", 
                         items: const ['Aluno', 'Funcionário', 'Visitante'],
                         value: tipoSelecionado,
                         onSelected: (val) {
-                          setStateModal(() => tipoSelecionado = val);
+                          setStateModal(() {
+                            tipoSelecionado = val;
+                          });
                         },
                       ),
                       if (tipoSelecionado != 'Visitante')
                         CampoTextoWidget(
                           label: "Matrícula",
                           controller: matriculaController,
+                          mostrarBordaCinza: true,
                         ),
                     ],
                   ),
@@ -173,13 +178,19 @@ class _PacientesPageState extends State<PacientesPage> {
                 ButtonAmareloWidget(
                   texto: "Salvar",
                   onPressed: () async {
+                    // Trava de segurança: impede salvar se o Tipo estiver em branco
+                    if (tipoSelecionado == null) {
+                      showToast(context, message: "Selecione o tipo de paciente!", type: ToastType.error);
+                      return;
+                    }
+
                     try {
                       final novoPaciente = Paciente(
                         id: paciente?.id, 
                         nome: nomeController.text,
                         cpf: cpfController.text,
                         matricula: tipoSelecionado == 'Visitante' ? null : matriculaController.text,
-                        idTipoPaciente: _getIdTipo(tipoSelecionado),
+                        idTipoPaciente: _getIdTipo(tipoSelecionado!),
                       );
 
                       await _pacienteService.salvarPaciente(novoPaciente);
@@ -257,23 +268,11 @@ class _PacientesPageState extends State<PacientesPage> {
           Row(
             children: [
               Expanded(
-                child: TextField(
+                child: CampoBuscaWidget(
                   controller: _buscaController,
-                  decoration: InputDecoration(
-                    hintText: "Buscar por nome ou CPF...",
-                    prefixIcon: const Icon(Icons.search, color: menuItemNaoSelecionado),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: azulUnifor),
-                    ),
-                  ),
+                  texto: "Buscar por nome ou CPF...",
+                  prefixIcon: Icons.search_rounded,
+                  onChanged: (value) => _filtrarPacientes(),
                 ),
               ),
               const SizedBox(width: 16),
@@ -299,7 +298,6 @@ class _PacientesPageState extends State<PacientesPage> {
                       setState(() {
                         if (novoValor != null) {
                           _filtroAtual = novoValor;
-                          
                           _filtrarPacientes(); 
                         }
                       });
@@ -327,7 +325,16 @@ class _PacientesPageState extends State<PacientesPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: DataTable(
-                  headingRowColor: MaterialStateProperty.resolveWith((states) => Colors.grey.shade50),
+                  showCheckboxColumn: false,
+                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (states.contains(WidgetState.hovered)) {
+                        return azulSelecionadoDropDown.withOpacity(0.3);
+                      }
+                      return null;
+                    },
+                  ),
+                  headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
                   dataRowMinHeight: 60,
                   dataRowMaxHeight: 60,
                   horizontalMargin: 24,
@@ -341,6 +348,7 @@ class _PacientesPageState extends State<PacientesPage> {
                   
                   rows: _pacientesFiltrados.map((paciente) {
                     return DataRow(
+                      onSelectChanged: (_) {}, // Habilita o efeito visual de seleção/hover
                       cells: [
                         DataCell(Text(paciente.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
                         DataCell(Text(paciente.matricula ?? '-')), 
