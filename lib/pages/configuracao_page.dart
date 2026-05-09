@@ -89,6 +89,9 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
       final configRecuperada = await _configService.buscarConfiguracoes();
       final impressorasBuscadas = await _configService.listarImpressoras();
 
+    impressorasBuscadas.insert(0, Printer(url: 'naoSelecionada', name: "Nenhuma"));
+
+
       //busco a impressora salva no banco
       if(configRecuperada != null){
         _impressoraSelecionada = impressorasBuscadas.where(
@@ -184,9 +187,10 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
                             const SizedBox(height: 20),
 
                             CampoDropdownWidget<Printer?>(
+                              possuiBorda: false,
                               label: "Impressora",
                               hintText: "Selecione uma impressora",
-                              items: [null, ..._impressoras],
+                              items: _impressoras,
                               value: _impressoraSelecionada,
 
                               getLabel: (p) => p?.name ?? "Nenhuma",

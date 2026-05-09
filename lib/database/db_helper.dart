@@ -1,4 +1,6 @@
 // padrão singleton
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -12,16 +14,19 @@ class DbHelper {
   get database async {
     if (_database != null) return _database;
 
-    _database = await _initDatabase(); // guarda a instancia do banco
+    _database = await _initDatabase();
     return _database!;
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'enfermagem.db');
-    print("CAMINHO DO DB: $path");
+    Directory appDataDir = await getApplicationSupportDirectory();
+
+    String path = join(appDataDir.path, 'enfermagem.db');
+
+    print("CAMINHO DO BANCO DE DADOS: $path");
 
     return await openDatabase(
-      join(await getDatabasesPath(), 'enfermagem.db'),
+      path,
       version: 1,
       onCreate: _onCreate,
     );

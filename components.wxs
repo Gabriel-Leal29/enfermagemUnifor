@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Component Id="cmpDC22F85144003CB2F05080B8CF79FC46" Guid="{BFAD0190-E73B-49E1-B6A1-66F5FBB86D4B}">
+                <File Id="fil230F9A11CF93D3D1A94FAA7A9D69118F" KeyPath="yes" Source="flutter_windows.dll" />
+            </Component>
+            <Component Id="cmpE9F08FAD2A628FCE472306FE8DCE93D5" Guid="{95B0410E-E41B-4D61-A50D-433ABA496246}">
+                <File Id="fil30EDA5C30D6FBF24B7553A1EAE1D4103" KeyPath="yes" Source="pdfium.dll" />
+            </Component>
+            <Component Id="cmp299587F2823208A846ADF81281814C14" Guid="{B3B562C2-1271-4769-BF24-99C1C36B8E75}">
+                <File Id="fil539970497540B90BFFB15CF09278FCD0" KeyPath="yes" Source="printing_plugin.dll" />
+            </Component>
+            <Component Id="cmpE1F819E9F0DE12052216D6D9563E4EF5" Guid="{394B58CA-C263-4B8C-9EAE-19D895753F6E}">
+                <File Id="fil7B3403D80EADBBEC42D6210D3289C926" KeyPath="yes" Source="screen_retriever_plugin.dll" />
+            </Component>
+            <Component Id="cmp01000D74F559983AC9750C3E87771662" Guid="{AAAEF736-E416-48F3-BE59-BE19F2CC66BD}">
+                <File Id="fil170F5D00550326081B94D3FD54AB9440" KeyPath="yes" Source="sqlite3.dll" />
+            </Component>
+            <Component Id="cmp70D7EF34E9B6D1081400F0FC7644524D" Guid="{85EE789E-873D-4F26-AF22-13906CD276B5}">
+                <File Id="fil6EACF2B9B1DC081EB15B302C51C8FAD7" KeyPath="yes" Source="window_manager_plugin.dll" />
+            </Component>
+            <Directory Id="dir76A8B56EDC1C4DD3CB4177F3704BC91E" Name="data">
+                <Component Id="cmpCF83D7D65587D05A151D1E25702E167F" Guid="{B3EE1FCF-17EE-4A90-A902-02C182803B55}">
+                    <File Id="filC8D6740BEA75F19BA5204B613C03D8A8" KeyPath="yes" Source="data\app.so" />
+                </Component>
+                <Component Id="cmp0E0DCB81807E433F9DBCEB0D089B25B5" Guid="{4B2B2C62-4FE4-4115-BCD0-BBC6790B6DF1}">
+                    <File Id="filFB2ED5EBC1081127146486443055DB0D" KeyPath="yes" Source="data\icudtl.dat" />
+                </Component>
+                <Directory Id="dir4311D903D70E55164A03E9E9374AC9B0" Name="flutter_assets">
+                    <Component Id="cmp362972CB336FCADAB6FAD4E58ABB50C0" Guid="{60C6C073-C50F-4CD3-9F2B-71FED9114DD2}">
+                        <File Id="filF34A97E96DF56DC7F9FA1F571A635270" KeyPath="yes" Source="data\flutter_assets\AssetManifest.bin" />
+                    </Component>
+                    <Component Id="cmp7A9B0136F23F84A4A09D4D0E28D8636B" Guid="{4D9E7C45-B7FB-420B-A10D-B19FC172040E}">
+                        <File Id="fil130B1805FDD25A50E354B5ADEEAC89F4" KeyPath="yes" Source="data\flutter_assets\FontManifest.json" />
+                    </Component>
+                    <Component Id="cmp90671292812F4FFA17B66812D7B02F23" Guid="{2D8B6E49-B7AB-4335-8252-2E1C785F09D4}">
+                        <File Id="fil7BB5C7A3A762FED9EC3F844577DD0A9E" KeyPath="yes" Source="data\flutter_assets\NativeAssetsManifest.json" />
+                    </Component>
+                    <Component Id="cmpB22BCD9EFB853D38668ABE777CBF404C" Guid="{7615E7D4-87EE-4841-AA48-8640D5C21736}">
+                        <File Id="fil95F1B70B711016C2E2A74411F6B41801" KeyPath="yes" Source="data\flutter_assets\NOTICES.Z" />
+                    </Component>
+                    <Directory Id="dir44DE80E5FFD251532250E7F4BB7B2821" Name="assets">
+                        <Directory Id="dirE75FB312EAA247C0082F3701FE583C7B" Name="images">
+                            <Component Id="cmpABAEC927663B251C25988AE3EAAB0FCD" Guid="{0B81B86B-13D0-457D-93C7-9E36B0C15C9F}">
+                                <File Id="filA75C8521825790B28D182EBB1F145A08" KeyPath="yes" Source="data\flutter_assets\assets\images\logo_unifor_mg.jpg" />
+                            </Component>
+                        </Directory>
+                    </Directory>
+                    <Directory Id="dirE2A82CA30E4E1381D520C8FF40996653" Name="fonts">
+                        <Component Id="cmp9475753282C5250DEC233DF924257EDD" Guid="{A46CDC51-B8EB-4226-B205-B7A691898830}">
+                            <File Id="fil95709FE501C331265C6CAAD00C2EA783" KeyPath="yes" Source="data\flutter_assets\fonts\MaterialIcons-Regular.otf" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="dirE3A5CD763BAF580FDB3696619F614D3F" Name="packages">
+                        <Directory Id="dir5FF583AEA68E18714B78C24666F2A264" Name="cupertino_icons">
+                            <Directory Id="dir3FA823D26185B1B6457D4DCE2A77C372" Name="assets">
+                                <Component Id="cmp995EB1479D86208A86E88112F9873FE0" Guid="{E9F7C46B-6B51-43BD-B22F-CA57A5735DEA}">
+                                    <File Id="fil7EC168CAE9512344DB7F6000958E43CF" KeyPath="yes" Source="data\flutter_assets\packages\cupertino_icons\assets\CupertinoIcons.ttf" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                        <Directory Id="dir76993AEF82FE6B16ABCBC8039CB696BC" Name="window_manager">
+                            <Directory Id="dirA60AD7FF5E838611FEDF9115DB041B6A" Name="images">
+                                <Component Id="cmp8DF768FC920D09B64191181F68492C64" Guid="{8865310E-2263-4CE5-BDB9-E0FC27F9566F}">
+                                    <File Id="fil99F7CB641600398B5BF5C01BF8622122" KeyPath="yes" Source="data\flutter_assets\packages\window_manager\images\ic_chrome_close.png" />
+                                </Component>
+                                <Component Id="cmp990E936D8AC6A78698AAD92A36E67CD2" Guid="{86E440B5-5559-4383-8F3C-64481CD7E6E3}">
+                                    <File Id="filE2354ACBC256062FF3130197DA427EBD" KeyPath="yes" Source="data\flutter_assets\packages\window_manager\images\ic_chrome_maximize.png" />
+                                </Component>
+                                <Component Id="cmpECBC23ADEC529A04B12090B2C1EA924D" Guid="{E8AE8B0C-E31B-4468-B933-36A91E02E917}">
+                                    <File Id="filE8C7E6BCADDA13E0C6354B630A68012E" KeyPath="yes" Source="data\flutter_assets\packages\window_manager\images\ic_chrome_minimize.png" />
+                                </Component>
+                                <Component Id="cmpEBAC1ACA0F746E752314A795635B427F" Guid="{A4E06D97-ECDC-4E1D-AF71-7AB38674A9D0}">
+                                    <File Id="filBB10649E6C8E54DB790FB81ED36ED3A6" KeyPath="yes" Source="data\flutter_assets\packages\window_manager\images\ic_chrome_unmaximize.png" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                    <Directory Id="dir5C01D37FD138B424B270832E735CB541" Name="shaders">
+                        <Component Id="cmpB754D63122F49081C0DAAE0074FBD9C1" Guid="{5BD3C093-AB73-48C1-8310-DDC54230746B}">
+                            <File Id="filFA5374F8D6DDBC810796AB1AB906FB74" KeyPath="yes" Source="data\flutter_assets\shaders\ink_sparkle.frag" />
+                        </Component>
+                        <Component Id="cmp14E84BBADE26D929C9F8A72C4CFCDFF1" Guid="{3759B251-9EB4-4639-B000-126FCB53F570}">
+                            <File Id="fil2CA73DA06B1638CA75CBFC6099280030" KeyPath="yes" Source="data\flutter_assets\shaders\stretch_effect.frag" />
+                        </Component>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="AppComponents">
+            <ComponentRef Id="cmpDC22F85144003CB2F05080B8CF79FC46" />
+            <ComponentRef Id="cmpE9F08FAD2A628FCE472306FE8DCE93D5" />
+            <ComponentRef Id="cmp299587F2823208A846ADF81281814C14" />
+            <ComponentRef Id="cmpE1F819E9F0DE12052216D6D9563E4EF5" />
+            <ComponentRef Id="cmp01000D74F559983AC9750C3E87771662" />
+            <ComponentRef Id="cmp70D7EF34E9B6D1081400F0FC7644524D" />
+            <ComponentRef Id="cmpCF83D7D65587D05A151D1E25702E167F" />
+            <ComponentRef Id="cmp0E0DCB81807E433F9DBCEB0D089B25B5" />
+            <ComponentRef Id="cmp362972CB336FCADAB6FAD4E58ABB50C0" />
+            <ComponentRef Id="cmp7A9B0136F23F84A4A09D4D0E28D8636B" />
+            <ComponentRef Id="cmp90671292812F4FFA17B66812D7B02F23" />
+            <ComponentRef Id="cmpB22BCD9EFB853D38668ABE777CBF404C" />
+            <ComponentRef Id="cmpABAEC927663B251C25988AE3EAAB0FCD" />
+            <ComponentRef Id="cmp9475753282C5250DEC233DF924257EDD" />
+            <ComponentRef Id="cmp995EB1479D86208A86E88112F9873FE0" />
+            <ComponentRef Id="cmp8DF768FC920D09B64191181F68492C64" />
+            <ComponentRef Id="cmp990E936D8AC6A78698AAD92A36E67CD2" />
+            <ComponentRef Id="cmpECBC23ADEC529A04B12090B2C1EA924D" />
+            <ComponentRef Id="cmpEBAC1ACA0F746E752314A795635B427F" />
+            <ComponentRef Id="cmpB754D63122F49081C0DAAE0074FBD9C1" />
+            <ComponentRef Id="cmp14E84BBADE26D929C9F8A72C4CFCDFF1" />
+        </ComponentGroup>
+    </Fragment>
+</Wix>

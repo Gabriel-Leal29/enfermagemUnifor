@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+
+    <Bundle Name="Enfermagem Unifor"
+            Version="1.0.0.0"
+            Manufacturer="Gabriel"
+            UpgradeCode="e3ad9d8d-7705-4598-a1ab-526d78529237"
+            IconSourceFile="logo.ico"> <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+            <bal:WixStandardBootstrapperApplication
+                LicenseFile="license.rtf"
+                LogoFile="logo_unifor_mg.png" />
+        </BootstrapperApplicationRef>
+
+        <Chain>
+            <MsiPackage SourceFile="InstaladorEnfermagem.msi" DisplayInternalUI="yes" Visible="no" />
+        </Chain>
+    </Bundle>
+</Wix>
