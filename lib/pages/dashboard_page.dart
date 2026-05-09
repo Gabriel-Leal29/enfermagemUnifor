@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../dao/consulta_dao.dart';
 import '../dao/paciente_dao.dart';
+import '../dao/produto_dao.dart';
 import '../theme/theme.dart';
 import '../bases/page_base.dart';
 
@@ -17,6 +18,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final _consultaDao = ConsultaDao();
   final _pacienteDao = PacienteDao();
+  final _produtoDao = ProdutoDao();
 
   bool _isLoading = true;
   
@@ -25,9 +27,16 @@ class _DashboardPageState extends State<DashboardPage> {
   String diaDePico = '-';
   double mediaSemanal = 0.0;
   
+  int totalProdutos = 0;
+  int estoqueNormal = 0;
+  int estoqueBaixo = 0;
+  int semEstoque = 0;
+  
   List<BarChartGroupData> barGroups = [];
   List<PieChartSectionData> pieSections = [];
+  List<PieChartSectionData> pieEstoqueSections = [];
   List<FlSpot> lineSpots = [];
+  List<String> dias7Labels = [];
 
   @override
   void initState() {
@@ -52,6 +61,13 @@ class _DashboardPageState extends State<DashboardPage> {
       // Simulando processamento dos últimos 30 dias para a linha de evolução
       final consultas30Dias = await _consultaDao.getAtendimentosUltimosDias(30);
       _processarConsultas30Dias(consultas30Dias);
+
+      final statsEstoque = await _produtoDao.getEstatisticasEstoque(10.0);
+      totalProdutos = statsEstoque['total'] ?? 0;
+      estoqueNormal = statsEstoque['normal'] ?? 0;
+      estoqueBaixo = statsEstoque['baixo'] ?? 0;
+      semEstoque = statsEstoque['zerado'] ?? 0;
+      _buildPieEstoqueChart();
     } catch (e) {
       print("Erro ao carregar dashboard: \$e");
     }
@@ -73,7 +89,7 @@ class _DashboardPageState extends State<DashboardPage> {
           PieChartSectionData(
             color: colors[i % colors.length],
             value: total.toDouble(),
-            title: '\$total',
+            title: '$total',
             radius: 50,
             titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
           )
@@ -83,40 +99,68 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  void _processarConsultas7Dias(List<Map<String, dynamic>> consultas) {
-    Map<int, int> contagemPorDia = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0}; // 1 = Seg, 7 = Dom
-    int totalSemana = consultas.length;
+  void _buildPieEstoqueChart() {
+    pieEstoqueSections = [];
+    if (totalProdutos == 0) return;
     
-    for(var c in consultas) {
+    if (estoqueNormal > 0) {
+      pieEstoqueSections.add(PieChartSectionData(color: Colors.green, value: estoqueNormal.toDouble(), title: '$estoqueNormal', radius: 50, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)));
+    }
+    if (estoqueBaixo > 0) {
+      pieEstoqueSections.add(PieChartSectionData(color: Colors.orange, value: estoqueBaixo.toDouble(), title: '$estoqueBaixo', radius: 50, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)));
+    }
+    if (semEstoque > 0) {
+      pieEstoqueSections.add(PieChartSectionData(color: Colors.red, value: semEstoque.toDouble(), title: '$semEstoque', radius: 50, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)));
+    }
+  }
+
+  void _processarConsultas7Dias(List<Map<String, dynamic>> consultas) {
+    barGroups = [];
+    dias7Labels = [];
+    int maxCount = 0;
+    int maxDayIndex = -1;
+
+    final hoje = DateTime.now();
+    List<DateTime> ultimos7Dias = [];
+    for (int i = 6; i >= 0; i--) {
+      ultimos7Dias.add(hoje.subtract(Duration(days: i)));
+    }
+
+    Map<String, int> contagem = {};
+    for (var d in ultimos7Dias) {
+      String chave = DateFormat('dd/MM').format(d);
+      contagem[chave] = 0;
+      dias7Labels.add(chave);
+    }
+
+    int totalSemana = 0;
+    for (var c in consultas) {
       final dataMs = c['data'] as int?;
-      if(dataMs != null) {
+      if (dataMs != null) {
         final dt = DateTime.fromMillisecondsSinceEpoch(dataMs);
-        contagemPorDia[dt.weekday] = (contagemPorDia[dt.weekday] ?? 0) + 1;
+        String chave = DateFormat('dd/MM').format(dt);
+        if (contagem.containsKey(chave)) {
+          contagem[chave] = contagem[chave]! + 1;
+          totalSemana++;
+        }
       }
     }
-    
+
     mediaSemanal = totalSemana / 7.0;
-    
-    int maxCount = 0;
-    int maxDay = 1;
-    contagemPorDia.forEach((day, count) {
-      if(count > maxCount) {
+
+    for (int i = 0; i < 7; i++) {
+      String chave = dias7Labels[i];
+      int count = contagem[chave]!;
+      if (count > maxCount) {
         maxCount = count;
-        maxDay = day;
+        maxDayIndex = i;
       }
-    });
-    
-    const diasSemana = {1: 'Segunda', 2: 'Terça', 3: 'Quarta', 4: 'Quinta', 5: 'Sexta', 6: 'Sábado', 7: 'Domingo'};
-    diaDePico = maxCount > 0 ? diasSemana[maxDay]! : '-';
-    
-    barGroups = [];
-    for(int i = 1; i <= 7; i++) {
       barGroups.add(
         BarChartGroupData(
           x: i,
           barRods: [
             BarChartRodData(
-              toY: (contagemPorDia[i] ?? 0).toDouble(),
+              toY: count.toDouble(),
               color: azulUnifor,
               width: 16,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
@@ -125,30 +169,39 @@ class _DashboardPageState extends State<DashboardPage> {
         )
       );
     }
+
+    diaDePico = maxDayIndex != -1 ? dias7Labels[maxDayIndex] : '-';
   }
 
   void _processarConsultas30Dias(List<Map<String, dynamic>> consultas) {
-    // Agrupa por semanas (simplificado)
-    Map<int, int> contagemSemanas = {1:0, 2:0, 3:0, 4:0};
+    Map<int, int> contagemSemanas = {0:0, 1:0, 2:0, 3:0};
     
+    final hoje = DateTime.now();
     for(var c in consultas) {
       final dataMs = c['data'] as int?;
       if(dataMs != null) {
         final dt = DateTime.fromMillisecondsSinceEpoch(dataMs);
-        final diasAtras = DateTime.now().difference(dt).inDays;
+        final diasAtras = hoje.difference(dt).inDays;
         
-        if(diasAtras <= 7) contagemSemanas[4] = (contagemSemanas[4] ?? 0) + 1;
-        else if(diasAtras <= 14) contagemSemanas[3] = (contagemSemanas[3] ?? 0) + 1;
-        else if(diasAtras <= 21) contagemSemanas[2] = (contagemSemanas[2] ?? 0) + 1;
-        else if(diasAtras <= 30) contagemSemanas[1] = (contagemSemanas[1] ?? 0) + 1;
+        if (diasAtras < 0) continue; 
+        
+        if (diasAtras < 7) {
+            contagemSemanas[3] = (contagemSemanas[3] ?? 0) + 1; 
+        } else if (diasAtras < 14) {
+            contagemSemanas[2] = (contagemSemanas[2] ?? 0) + 1; 
+        } else if (diasAtras < 21) {
+            contagemSemanas[1] = (contagemSemanas[1] ?? 0) + 1; 
+        } else if (diasAtras < 30) {
+            contagemSemanas[0] = (contagemSemanas[0] ?? 0) + 1; 
+        }
       }
     }
     
     lineSpots = [
-      FlSpot(1, (contagemSemanas[1] ?? 0).toDouble()),
-      FlSpot(2, (contagemSemanas[2] ?? 0).toDouble()),
-      FlSpot(3, (contagemSemanas[3] ?? 0).toDouble()),
-      FlSpot(4, (contagemSemanas[4] ?? 0).toDouble()),
+      FlSpot(1, (contagemSemanas[0] ?? 0).toDouble()),
+      FlSpot(2, (contagemSemanas[1] ?? 0).toDouble()),
+      FlSpot(3, (contagemSemanas[2] ?? 0).toDouble()),
+      FlSpot(4, (contagemSemanas[3] ?? 0).toDouble()),
     ];
   }
 
@@ -175,7 +228,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                _buildLineChartCard(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 2, child: _buildLineChartCard()),
+                    const SizedBox(width: 24),
+                    Expanded(flex: 1, child: _buildPieEstoqueCard()),
+                  ],
+                ),
               ],
             ),
           ),
@@ -285,8 +345,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                        const days = {1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb', 7: 'Dom'};
-                        return Text(days[value.toInt()] ?? '', style: TextStyle(color: Colors.grey[600], fontSize: 12));
+                        int index = value.toInt();
+                        if (index >= 0 && index < dias7Labels.length) {
+                          return Text(dias7Labels[index], style: TextStyle(color: Colors.grey[600], fontSize: 11));
+                        }
+                        return const Text('');
                       },
                       reservedSize: 28,
                     ),
@@ -426,6 +489,47 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPieEstoqueCard() {
+    return Container(
+      height: 250,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Saúde do Estoque", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          Expanded(
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 2,
+                centerSpaceRadius: 40,
+                sections: pieEstoqueSections.isEmpty 
+                    ? [PieChartSectionData(color: Colors.grey[300], value: 1, radius: 40, showTitle: false)] 
+                    : pieEstoqueSections,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildLegendItem(Colors.green, "Normal"),
+              const SizedBox(width: 8),
+              _buildLegendItem(Colors.orange, "Baixo"),
+              const SizedBox(width: 8),
+              _buildLegendItem(Colors.red, "Zerado"),
+            ],
+          )
         ],
       ),
     );

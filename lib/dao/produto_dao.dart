@@ -56,4 +56,35 @@ class ProdutoDao {
       whereArgs: [idProduto],
     );
   }
+
+  // Dashboard Methods
+  Future<Map<String, int>> getEstatisticasEstoque(double limiteBaixo) async {
+    final db = await DbHelper.instance.database;
+    final List<Map<String, dynamic>> produtos = await db.query('produto');
+    
+    int estoqueNormal = 0;
+    int estoqueBaixo = 0;
+    int semEstoque = 0;
+
+    for (var p in produtos) {
+      double estoque = (p['estoque'] is int) 
+          ? (p['estoque'] as int).toDouble() 
+          : (p['estoque'] as double? ?? 0.0);
+          
+      if (estoque <= 0) {
+        semEstoque++;
+      } else if (estoque <= limiteBaixo) {
+        estoqueBaixo++;
+      } else {
+        estoqueNormal++;
+      }
+    }
+
+    return {
+      'normal': estoqueNormal,
+      'baixo': estoqueBaixo,
+      'zerado': semEstoque,
+      'total': produtos.length,
+    };
+  }
 }
