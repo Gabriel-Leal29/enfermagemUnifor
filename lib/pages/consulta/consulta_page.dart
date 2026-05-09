@@ -313,7 +313,7 @@ class ConsultaPageState extends State<ConsultaPage>{
             if (_dadosCarregando)
               const Center(child: CircularProgressIndicator())
             else if (_consultas.isEmpty)
-              const Center(child: Text("Nenhum consultada encontrada.", style: TextStyle(color: Colors.grey, fontSize: 16)))
+              const Center(child: Text("Nenhuma consulta encontrada.", style: TextStyle(color: Colors.grey, fontSize: 16)))
             else
               Container(
                 width: double.infinity,
