@@ -20,7 +20,7 @@ class ImpressaoService {
 
       final nomeImpressora = dados!.impressora;
 
-      if (nomeImpressora != null && nomeImpressora.isNotEmpty) {
+      if (nomeImpressora != null && nomeImpressora.isNotEmpty && nomeImpressora != "Nenhuma") {
         final printers = await _configService.listarImpressoras();
 
         final printer = printers.firstWhere(
