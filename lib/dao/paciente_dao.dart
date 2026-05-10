@@ -39,4 +39,21 @@ class PacienteDao {
       whereArgs: [id],
     );
   }
+
+  // Dashboard Methods
+  Future<int> getTotalPacientes() async {
+    final db = await DbHelper.instance.database;
+    final result = await db.rawQuery('SELECT COUNT(*) as total FROM paciente');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<List<Map<String, dynamic>>> getPacientesPorTipo() async {
+    final db = await DbHelper.instance.database;
+    return await db.rawQuery('''
+      SELECT t.descricao as tipo, COUNT(p.id) as total
+      FROM tipo_paciente t
+      LEFT JOIN paciente p ON t.id = p.id_tipo_paciente
+      GROUP BY t.id, t.descricao
+    ''');
+  }
 }

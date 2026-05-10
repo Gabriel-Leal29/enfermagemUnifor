@@ -3,12 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  printing
   screen_retriever
   window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
-  printing_ffi
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

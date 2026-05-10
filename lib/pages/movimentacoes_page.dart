@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../bases/page_base.dart'; // <-- Adicionado para padronizar o layout
 import '../theme/theme.dart';
 import '../widgets/campo_busca_widget.dart';
 import '../widgets/campo_drop_down_widget.dart';
@@ -80,15 +81,17 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
           textoDigitado,
         );
         bool matchSituacao = true;
+
+        bool isCorrecao = lancamento.numeroNfe.startsWith('000');
+
         if (situacaoFiltro == 'ENTRADA') {
-          matchSituacao =
-              lancamento.situacao == 'ENTRADA' && lancamento.numeroNfe != '000';
+          matchSituacao = lancamento.situacao == 'ENTRADA' && !isCorrecao;
         } else if (situacaoFiltro == 'SAÍDA') {
-          matchSituacao =
-              lancamento.situacao == 'SAIDA' && lancamento.numeroNfe != '000';
+          matchSituacao = lancamento.situacao == 'SAIDA' && !isCorrecao;
         } else if (situacaoFiltro == 'CORREÇÕES') {
-          matchSituacao = lancamento.numeroNfe == '000';
+          matchSituacao = isCorrecao;
         }
+
         return matchNfe && matchSituacao;
       }).toList();
 
@@ -96,7 +99,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
       Set<String> nfesProcessadas = {};
 
       for (var lancamento in filtradosParcial) {
-        if (lancamento.numeroNfe == '000') {
+        if (lancamento.numeroNfe.startsWith('000')) {
           listaAgrupada.add(lancamento);
         } else {
           if (!nfesProcessadas.contains(lancamento.numeroNfe)) {
@@ -123,7 +126,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
   ) {
     List<GerenciadorEstoque> itensDestaNota = [];
 
-    if (lancamentoClicado.numeroNfe == '000') {
+    if (lancamentoClicado.numeroNfe.startsWith('000')) {
       itensDestaNota = [lancamentoClicado];
     } else {
       itensDestaNota = todosOsLancamentos
@@ -137,9 +140,9 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: Text(
-            lancamentoClicado.numeroNfe == '000'
-                ? 'Detalhes da Correção'
-                : 'Itens da NFe: ${lancamentoClicado.numeroNfe}',
+            lancamentoClicado.numeroNfe.startsWith('000')
+                ? 'Detalhes da Correção (${lancamentoClicado.numeroNfe})'
+                : 'Itens da NFe/Consulta: (${lancamentoClicado.numeroNfe})',
             style: textStyleBlackTituloPage,
           ),
           content: SizedBox(
@@ -165,7 +168,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                     nomeProduto,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('Movimentado: ${item.quantidade.toInt()} un.'),
+                  subtitle: Text('Movimentado: ${item.quantidade.toInt()} und.'),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -204,17 +207,19 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
+    // Trocado de Padding() para PageBase() para igualar ao de Consultas
+    return PageBase(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Movimentações de Estoque",
-            style: textStyleBlackTituloPage,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text("Movimentações de Estoque", style: textStyleBlackTituloPage),
+            ],
           ),
-          const SizedBox(height: 24),
 
+          // Removido o SizedBox de 24 para colar no filtro e ficar igual Consulta
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -227,7 +232,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                   onChanged: (val) => _filtrarLista(),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12), // Trocado 16 por 12
               Expanded(
                 flex: 1,
                 child: CampoDropdownWidget<String>(
@@ -247,205 +252,229 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20), // Trocado 24 por 20
 
           if (isLoading)
             const Center(child: CircularProgressIndicator())
           else if (lancamentosFiltrados.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 20.0),
-              child: Center(child: Text("Nenhuma movimentação encontrada.")),
+            const Center(
+              child: Text(
+                "Nenhuma movimentação encontrada.",
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
             )
           else
             Container(
+              width: double
+                  .infinity, // Adicionado para ocupar a largura toda igual tabela
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                ), // Usando 200 igual Consulta
+                borderRadius: BorderRadius.circular(12), // Trocado 8 por 12
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 16.0,
+              child: ClipRRect(
+                // Adicionado para manter as bordas arredondadas no hover
+                borderRadius: BorderRadius.circular(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, // Horizontal 24 igual DataTable
+                        vertical: 16.0,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              'NFe / Referência',
+                              style: _headerStyle(),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text('Produto', style: _headerStyle()),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text('Situação', style: _headerStyle()),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text('Data', style: _headerStyle()),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Text('Ações', style: _headerStyle()),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Text('NFe', style: _headerStyle()),
-                        ),
-                        Expanded(
-                          flex: 3,
-                          child: Text('Produto', style: _headerStyle()),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Text('Situação', style: _headerStyle()),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Text('Data', style: _headerStyle()),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text('Ações', style: _headerStyle()),
+                    Divider(
+                      height: 1,
+                      color: Colors.grey.shade200,
+                    ), // Borda interna
+
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: lancamentosFiltrados.length,
+                      separatorBuilder: (context, index) =>
+                          Divider(height: 1, color: Colors.grey.shade200),
+                      itemBuilder: (context, index) {
+                        final lancamento = lancamentosFiltrados[index];
+                        final bool isCorrecao = lancamento.numeroNfe.startsWith(
+                          '000',
+                        );
+
+                        String textoProduto = '';
+                        if (isCorrecao) {
+                          final produto = produtosMap[lancamento.idProduto];
+                          textoProduto = produto?.nome ?? 'Desconhecido';
+                        } else {
+                          int qtdItens = todosOsLancamentos
+                              .where((l) => l.numeroNfe == lancamento.numeroNfe)
+                              .length;
+                          textoProduto = qtdItens > 1
+                              ? '$qtdItens itens agrupados'
+                              : '1 item';
+                        }
+
+                        final String dataFormatada = _formatarData(
+                          lancamento.data,
+                        );
+
+                        String textoSituacao = isCorrecao
+                            ? 'CORREÇÃO'
+                            : lancamento.situacao;
+                        Color corSituacao = Colors.grey.shade700;
+
+                        if (isCorrecao) {
+                          corSituacao = lancamento.situacao == 'SAIDA'
+                              ? Colors.red.shade700
+                              : Colors.blue.shade700;
+                        } else {
+                          if (textoSituacao == 'ENTRADA') {
+                            corSituacao = Colors.green.shade700;
+                          }
+                          if (textoSituacao == 'SAIDA') {
+                            corSituacao = Colors.red.shade700;
+                          }
+                        }
+
+                        return InkWell(
+                          onTap: () => _mostrarDetalhesNfe(context, lancamento),
+                          // Hover com a mesma cor do DataTable de Consultas
+                          hoverColor: azulSelecionadoDropDown.withOpacity(0.3),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0, // Horizontal 24 igual DataTable
+                              vertical:
+                                  18.0, // Aumentado para simular a altura 60 do DataTable
+                            ),
+                            child: Row(
+                              children: [
+                                // NFE
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    lancamento.numeroNfe,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    textoProduto,
+                                    style: TextStyle(
+                                      color: isCorrecao
+                                          ? Colors.grey.shade800
+                                          : Colors.blueGrey.shade600,
+                                      fontStyle: isCorrecao
+                                          ? FontStyle.normal
+                                          : FontStyle.italic,
+                                      fontWeight: isCorrecao
+                                          ? FontWeight.normal
+                                          : FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+
+                                Expanded(
+                                  flex: 2,
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: corSituacao.withOpacity(0.1),
+                                        border: Border.all(
+                                          color: corSituacao.withOpacity(0.5),
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        textoSituacao,
+                                        style: TextStyle(
+                                          color: corSituacao,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // DATA
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    dataFormatada,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  flex: 1,
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.visibility,
+                                        color: Colors.blueGrey,
+                                      ),
+                                      tooltip: '',
+                                      onPressed: () => _mostrarDetalhesNfe(
+                                        context,
+                                        lancamento,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  ),
-                  Divider(height: 1, color: Colors.grey.shade300),
-
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: lancamentosFiltrados.length,
-                    separatorBuilder: (context, index) =>
-                        Divider(height: 1, color: Colors.grey.shade200),
-                    itemBuilder: (context, index) {
-                      final lancamento = lancamentosFiltrados[index];
-                      final bool isCorrecao = lancamento.numeroNfe == '000';
-
-                      String textoProduto = '';
-                      if (isCorrecao) {
-                        final produto = produtosMap[lancamento.idProduto];
-                        textoProduto = produto?.nome ?? 'Desconhecido';
-                      } else {
-                        int qtdItens = todosOsLancamentos
-                            .where((l) => l.numeroNfe == lancamento.numeroNfe)
-                            .length;
-                        textoProduto = qtdItens > 1
-                            ? '$qtdItens itens agrupados'
-                            : '1 item';
-                      }
-
-                      final String dataFormatada = _formatarData(
-                        lancamento.data,
-                      );
-
-                      String textoSituacao = isCorrecao
-                          ? 'CORREÇÃO'
-                          : lancamento.situacao;
-                      Color corSituacao = Colors.grey.shade700;
-
-                      if (isCorrecao) {
-                        corSituacao = lancamento.situacao == 'SAIDA'
-                            ? Colors.red.shade700
-                            : Colors.blue.shade700;
-                      } else {
-                        if (textoSituacao == 'ENTRADA')
-                          corSituacao = Colors.green.shade700;
-                        if (textoSituacao == 'SAIDA')
-                          corSituacao = Colors.red.shade700;
-                      }
-
-                      return InkWell(
-                        onTap: () => _mostrarDetalhesNfe(context, lancamento),
-                        hoverColor: Colors.blueGrey.shade50,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0,
-                          ),
-                          child: Row(
-                            children: [
-                              // NFE
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                  lancamento.numeroNfe,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1E293B),
-                                  ),
-                                ),
-                              ),
-
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  textoProduto,
-                                  style: TextStyle(
-                                    color: isCorrecao
-                                        ? Colors.grey.shade800
-                                        : Colors.blueGrey.shade600,
-                                    fontStyle: isCorrecao
-                                        ? FontStyle.normal
-                                        : FontStyle.italic,
-                                    fontWeight: isCorrecao
-                                        ? FontWeight.normal
-                                        : FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-
-                              Expanded(
-                                flex: 2,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: corSituacao.withOpacity(0.1),
-                                      border: Border.all(
-                                        color: corSituacao.withOpacity(0.5),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      textoSituacao,
-                                      style: TextStyle(
-                                        color: corSituacao,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // DATA
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                  dataFormatada,
-                                  style: TextStyle(color: Colors.grey.shade700),
-                                ),
-                              ),
-
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.visibility,
-                                      color: Colors.blueGrey,
-                                    ),
-                                    tooltip: '',
-                                    onPressed: () => _mostrarDetalhesNfe(
-                                      context,
-                                      lancamento,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],
@@ -453,10 +482,8 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
     );
   }
 
+  // Header igualzinho ao DataTable
   TextStyle _headerStyle() {
-    return TextStyle(
-      fontWeight: FontWeight.bold,
-      color: Colors.blueGrey.shade700,
-    );
+    return const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey);
   }
 }

@@ -41,7 +41,7 @@ class GerenciadorEstoqueServices {
 
       if (item.produto.id != null) {
         await produtosService.entradaApenasEstoque(
-          item.produto,
+          item.produto.id!,
           item.quantidadeEntrada,
         );
 

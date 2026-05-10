@@ -7,7 +7,6 @@ class ProdutosService {
   ProdutosService(this.produtoDao);
 
   Future<void> adicionarProduto(Produto produto) async {
-    
     if (produto.nome.trim().isEmpty) {
       throw Exception("Nome não pode ser nulo");
     }
@@ -29,22 +28,31 @@ class ProdutosService {
     return diferenca;
   }
 
-  Future<void> entradaApenasEstoque(Produto produto, double quantidadeEntrada) async {
-    if(quantidadeEntrada <= 0){
-      throw Exception('quantidade de entrada não pode ser 0 ou negativa');
+  Future<void> entradaApenasEstoque(
+    int idProduto,
+    double quantidadeEntrada,
+  ) async {
+    if (quantidadeEntrada <= 0) {
+      throw Exception('A quantidade de entrada não pode ser zero ou negativa.');
     }
-    double novoEstoque = produto.estoque + quantidadeEntrada;
-    await produtoDao.atualizarApenasEstoque(produto.id!, novoEstoque);
+    await produtoDao.atualizaEstoqueEntrada(idProduto, quantidadeEntrada);
   }
 
-  Future<void> saidaApenasEstoque(Produto produto, double quantidadeEntrada) async {
-    if(quantidadeEntrada <= 0){
-      throw Exception('quantidade de saida não pode ser 0 ou negativa');
-    }if(quantidadeEntrada > produto.estoque){
-      throw Exception('quantiade a ser retirada maior que estoque total');
+  Future<void> saidaApenasEstoque(int idProduto, double quantidadeSaida) async {
+    if (quantidadeSaida <= 0) {
+      throw Exception('Quantidade de saída não pode ser zero ou negativa.');
     }
-    double novoEstoque = produto.estoque - quantidadeEntrada;
-    await produtoDao.atualizarApenasEstoque(produto.id!, novoEstoque);
+
+    int linhasAfetadas = await produtoDao.atualizaEstoqueSaida(
+      idProduto,
+      quantidadeSaida,
+    );
+
+    if (linhasAfetadas == 0) {
+      throw Exception(
+        'Quantidade a ser retirada é maior que o estoque total disponível.',
+      );
+    }
   }
 
   Future<void> editarProduto(Produto produto) async {
@@ -62,5 +70,33 @@ class ProdutosService {
     );
 
     return listaDeProdutos;
+  }
+
+  Future<List<Produto>> buscarTodosOsAtivos() async {
+    List<Produto> listaDeProdutos = await produtoDao.listarAtivos();
+
+    listaDeProdutos.sort(
+      (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
+    );
+
+    return listaDeProdutos;
+  }
+
+  Future<List<Produto>> buscarTodosOsInativos() async {
+    List<Produto> listaDeProdutos = await produtoDao.listarInativos();
+
+    listaDeProdutos.sort(
+      (a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()),
+    );
+
+    return listaDeProdutos;
+  }
+
+  Future<void> desativarProduto(int idProduto) async {
+    await produtoDao.desativarProduto(idProduto);
+  }
+
+  Future<void> ativarProduto(int idProduto) async {
+    await produtoDao.ativarProduto(idProduto);
   }
 }

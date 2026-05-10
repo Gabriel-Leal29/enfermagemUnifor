@@ -205,6 +205,7 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
             estoque: 0,
             idFornecedor: linha.idFornecedor!,
             idTipoProduto: linha.idTipoProduto!,
+            status: 'ativo',
           );
         }
       }
@@ -547,6 +548,59 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
                         );
                       },
                 ),
+                const SizedBox(height: 6),
+
+                // --- INÍCIO DO INDICADOR VISUAL ---
+                if (linha.produtoSelecionado != null)
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Produto já existente',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (linha.nomeController.text.isNotEmpty)
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors
+                              .orange, // Laranja para melhor contraste e leitura
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Novo produto',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  const SizedBox(
+                    height: 14,
+                  ), // Espaço reservado para a tela não dar "saltos"
+                // --- FIM DO INDICADOR VISUAL ---
               ],
             ),
           ),

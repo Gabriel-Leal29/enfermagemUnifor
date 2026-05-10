@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_enfermagem_desktop/pages/produtos_info.dart';
+import '../bases/page_base.dart';
 import '../theme/theme.dart';
 import '../widgets/button_amarelo_widget.dart';
 import '../widgets/campo_busca_widget.dart';
@@ -39,6 +40,10 @@ class _ProdutosPageState extends State<ProdutosPage> {
 
   bool isLoading = true;
 
+  // Variável para controlar o Dropdown de filtro
+  String statusFiltro = 'ATIVOS';
+  final List<String> opcoesStatus = ['ATIVOS', 'INATIVOS', 'TODOS'];
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +68,17 @@ class _ProdutosPageState extends State<ProdutosPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final dadosDoBanco = await _produtosService.buscarTodosOsProdutos();
+      List<Produto> dadosDoBanco;
+
+      // Chama o Service correto dependendo do filtro selecionado
+      if (statusFiltro == 'ATIVOS') {
+        dadosDoBanco = await _produtosService.buscarTodosOsAtivos();
+      } else if (statusFiltro == 'INATIVOS') {
+        dadosDoBanco = await _produtosService.buscarTodosOsInativos();
+      } else {
+        dadosDoBanco = await _produtosService.buscarTodosOsProdutos();
+      }
+
       final fornecedoresDoBanco = await _fornecedorService.buscarFornecedores();
       final tiposDoBanco = await _tipoProdutoDao.listarTipos();
 
@@ -79,9 +94,14 @@ class _ProdutosPageState extends State<ProdutosPage> {
 
       setState(() {
         todosOsProdutos = dadosDoBanco;
-        produtosFiltrados = dadosDoBanco;
         fornecedoresMap = mapF;
         tiposProdutoMap = mapT;
+      });
+
+      // Aplica o filtro de texto se houver algo digitado
+      _filtrarLista(_buscaController.text);
+
+      setState(() {
         isLoading = false;
       });
     } catch (e) {
@@ -104,6 +124,41 @@ class _ProdutosPageState extends State<ProdutosPage> {
             .toList();
       }
     });
+  }
+
+  // Função para alternar o status chamando o Service
+  Future<void> _alternarStatusProduto(Produto produto) async {
+    try {
+      setState(() => isLoading = true);
+
+      if (produto.status == 'ativo') {
+        await _produtosService.desativarProduto(produto.id!);
+        if (mounted)
+          showToast(
+            context,
+            message: "Produto desativado!",
+            type: ToastType.success,
+          );
+      } else {
+        await _produtosService.ativarProduto(produto.id!);
+        if (mounted)
+          showToast(
+            context,
+            message: "Produto ativado com sucesso!",
+            type: ToastType.success,
+          );
+      }
+
+      await _carregarDados();
+    } catch (e) {
+      setState(() => isLoading = false);
+      if (mounted)
+        showToast(
+          context,
+          message: "Erro ao alterar status: $e",
+          type: ToastType.error,
+        );
+    }
   }
 
   void _mostrarModalEdicao(BuildContext context, Produto produto) {
@@ -262,6 +317,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
                           estoque: novoEstoque,
                           idFornecedor: idFornecedorSelecionado,
                           idTipoProduto: idTipoProdutoSelecionado,
+                          status: produto.status, // Mantém o status que estava
                         );
 
                         await _produtosService.editarProduto(produtoAtualizado);
@@ -303,9 +359,8 @@ class _ProdutosPageState extends State<ProdutosPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
+    return PageBase(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -314,6 +369,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
               const Text("Produtos", style: textStyleBlackTituloPage),
               ButtonAmareloWidget(
                 texto: 'Novo Produto',
+                icone: Icons.add,
                 onPressed: () async {
                   final atualizou = await Navigator.push(
                     context,
@@ -335,215 +391,246 @@ class _ProdutosPageState extends State<ProdutosPage> {
           ),
           const SizedBox(height: 24),
 
-          CampoBuscaWidget(
-            texto: "Pesquisar Produto",
-            prefixIcon: Icons.search_rounded,
-            controller: _buscaController,
-            onChanged: _filtrarLista,
+          // --- CAMPO DE BUSCA + DROPDOWN DE STATUS ---
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: CampoBuscaWidget(
+                  texto: "Pesquisar Produto",
+                  prefixIcon: Icons.search_rounded,
+                  controller: _buscaController,
+                  onChanged: _filtrarLista,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 1,
+                child: CampoDropdownWidget<String>(
+                  label: '',
+                  hintText: 'Filtrar Status',
+                  items: opcoesStatus,
+                  value: statusFiltro,
+                  getLabel: (item) => item,
+                  onSelected: (selecionado) {
+                    setState(() {
+                      statusFiltro = selecionado;
+                      isLoading =
+                          true; // Mostra o loading enquanto busca no banco
+                    });
+                    _carregarDados(); // Busca os dados atualizados com o novo filtro
+                  },
+                ),
+              ),
+            ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
           if (isLoading)
             const Center(child: CircularProgressIndicator())
           else if (produtosFiltrados.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 20.0),
-              child: Center(child: Text("Nenhum produto encontrado.")),
+            const Center(
+              child: Text(
+                "Nenhum produto encontrado.",
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
             )
           else
             Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 16.0,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            'Nome',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey.shade700,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            'Unidade',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey.shade700,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Text(
-                            'Fornecedor',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey.shade700,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            'Estoque',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueGrey.shade700,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Ações',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blueGrey.shade700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: DataTable(
+                  showCheckboxColumn: false,
+                  dataRowColor: WidgetStateProperty.resolveWith<Color?>((
+                    states,
+                  ) {
+                    if (states.contains(WidgetState.hovered)) {
+                      return azulSelecionadoDropDown.withOpacity(0.3);
+                    }
+                    return null;
+                  }),
+                  headingRowColor: WidgetStateProperty.resolveWith(
+                    (states) => Colors.white,
                   ),
-                  Divider(height: 1, color: Colors.grey.shade300),
+                  dataRowMinHeight: 60,
+                  dataRowMaxHeight: 60,
+                  horizontalMargin: 24,
+                  columns: const [
+                    DataColumn(
+                      label: Text(
+                        "Nome",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "Unidade",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "Fornecedor",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "Estoque",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "Ações",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ],
+                  rows: produtosFiltrados.map((produto) {
+                    final bool alertaEstoque = produto.estoqueBaixo(
+                      produto.idTipoProduto,
+                      produto.estoque,
+                    );
 
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: produtosFiltrados.length,
-                    separatorBuilder: (context, index) =>
-                        Divider(height: 1, color: Colors.grey.shade200),
-                    itemBuilder: (context, index) {
-                      final produto = produtosFiltrados[index];
-                      final bool alertaEstoque = produto.estoqueBaixo(
-                        produto.idTipoProduto,
-                        produto.estoque,
-                      );
+                    final String nomeFornecedor =
+                        fornecedoresMap[produto.idFornecedor] ?? 'Desconhecido';
+                    final String nomeTipo =
+                        tiposProdutoMap[produto.idTipoProduto] ??
+                        'Desconhecido';
 
-                      final String nomeFornecedor =
-                          fornecedoresMap[produto.idFornecedor] ??
-                          'Desconhecido';
-                      final String nomeTipo =
-                          tiposProdutoMap[produto.idTipoProduto] ??
-                          'Desconhecido';
+                    // Cor do nome se estiver inativo
+                    final bool isAtivo = produto.status == 'ativo';
 
-                      return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProdutosInfo(
-                                produto: produto,
-                                nomeFornecedor: nomeFornecedor,
-                                nomeTipo: nomeTipo,
+                    return DataRow(
+                      onSelectChanged: (_) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProdutosInfo(
+                              produto: produto,
+                              nomeFornecedor: nomeFornecedor,
+                              nomeTipo: nomeTipo,
+                            ),
+                          ),
+                        );
+                      },
+                      cells: [
+                        DataCell(
+                          Text(
+                            produto.nome,
+                            style: TextStyle(
+                              fontWeight: isAtivo
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: isAtivo
+                                  ? const Color(0xFF1E293B)
+                                  : Colors.grey,
+                              decoration: isAtivo
+                                  ? TextDecoration.none
+                                  : TextDecoration.lineThrough,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            nomeTipo,
+                            style: TextStyle(color: Colors.grey.shade700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            nomeFornecedor,
+                            style: TextStyle(color: Colors.grey.shade700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        DataCell(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: alertaEstoque
+                                  ? const Color(0xFFDC3545)
+                                  : (isAtivo
+                                        ? const Color(0xFF1E293B)
+                                        : Colors.grey),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              produto.estoque.toInt().toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
                             ),
-                          );
-                        },
-                        hoverColor: Colors.blueGrey.shade50,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 6.0,
                           ),
-                          child: Row(
+                        ),
+                        DataCell(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  produto.nome,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1E293B),
-                                  ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.amber,
                                 ),
+                                tooltip: 'Editar',
+                                onPressed: () {
+                                  _mostrarModalEdicao(context, produto);
+                                },
                               ),
-
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                  nomeTipo,
-                                  style: TextStyle(color: Colors.grey.shade700),
+                              // --- NOVO BOTÃO ATIVAR/DESATIVAR ---
+                              IconButton(
+                                icon: Icon(
+                                  isAtivo
+                                      ? Icons.block
+                                      : Icons.check_circle_outline,
+                                  color: isAtivo
+                                      ? Colors.red.shade400
+                                      : Colors.green.shade600,
                                 ),
-                              ),
-
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                  nomeFornecedor,
-                                  style: TextStyle(color: Colors.grey.shade700),
-                                ),
-                              ),
-
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: alertaEstoque
-                                          ? const Color(0xFFDC3545)
-                                          : const Color(0xFF1E293B),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      produto.estoque.toInt().toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              Expanded(
-                                flex: 1,
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.edit,
-                                      color: Colors.amber,
-                                    ),
-                                    tooltip: '',
-                                    onPressed: () {
-                                      _mostrarModalEdicao(context, produto);
-                                    },
-                                  ),
-                                ),
+                                tooltip: isAtivo
+                                    ? 'Desativar Produto'
+                                    : 'Reativar Produto',
+                                onPressed: () {
+                                  _alternarStatusProduto(produto);
+                                },
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ],
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
             ),
         ],

@@ -4,6 +4,7 @@ class Produto {
   double estoque;
   final int idFornecedor;
   final int idTipoProduto;
+  String? status;
 
   Produto({
     this.id,
@@ -11,6 +12,7 @@ class Produto {
     required this.estoque,
     required this.idFornecedor,
     required this.idTipoProduto,
+    this.status,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class Produto {
       'estoque': estoque,
       'id_fornecedor': idFornecedor,
       'id_tipo_produto': idTipoProduto,
+      'status' : status,
     };
   }
 
@@ -27,14 +30,15 @@ class Produto {
     return Produto(
       id: map['id'],
       nome: map['nome'],
-      estoque: (map['estoque']as num).toDouble(),
+      estoque: (map['estoque'] as num).toDouble(),
       idFornecedor: map['id_fornecedor'],
       idTipoProduto: map['id_tipo_produto'],
+      status: map['status'],
     );
   }
 
   bool estoqueBaixo(int idTipo, double estoque) {
-    if ((idTipo == 1 && estoque <= 100) || (idTipo == 2 && estoque <= 10)) {
+    if ((idTipo == 1 && estoque <= 50)) {
       return true;
     }
 
