@@ -32,9 +32,14 @@ class _DashboardPageState extends State<DashboardPage> {
   int estoqueBaixo = 0;
   int semEstoque = 0;
   
+  int maxAtendimentosDia = 0;
+  double maxEvolucaoMensal = 0;
+  
+  int touchedIndexPiePaciente = -1;
+  int touchedIndexPieEstoque = -1;
+  List<Map<String, dynamic>> _dadosPacientes = [];
+  
   List<BarChartGroupData> barGroups = [];
-  List<PieChartSectionData> pieSections = [];
-  List<PieChartSectionData> pieEstoqueSections = [];
   List<FlSpot> lineSpots = [];
   List<String> dias7Labels = [];
 
@@ -51,8 +56,7 @@ class _DashboardPageState extends State<DashboardPage> {
       atendimentosHoje = await _consultaDao.getAtendimentosHoje();
       totalPacientes = await _pacienteDao.getTotalPacientes();
       
-      final tipoPacientes = await _pacienteDao.getPacientesPorTipo();
-      _buildPieChart(tipoPacientes);
+      _dadosPacientes = await _pacienteDao.getPacientesPorTipo();
 
       // Simulando processamento dos últimos 7 dias para barras e médias
       final consultas7Dias = await _consultaDao.getAtendimentosUltimosDias(7);
@@ -67,7 +71,6 @@ class _DashboardPageState extends State<DashboardPage> {
       estoqueNormal = statsEstoque['normal'] ?? 0;
       estoqueBaixo = statsEstoque['baixo'] ?? 0;
       semEstoque = statsEstoque['zerado'] ?? 0;
-      _buildPieEstoqueChart();
     } catch (e) {
       print("Erro ao carregar dashboard: \$e");
     }
@@ -75,43 +78,62 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _isLoading = false);
   }
 
-  void _buildPieChart(List<Map<String, dynamic>> dados) {
-    pieSections = [];
+  List<PieChartSectionData> _getPiePacienteSections() {
+    if (_dadosPacientes.isEmpty) {
+      return [PieChartSectionData(color: Colors.grey[300], value: 1, radius: 50, showTitle: false)];
+    }
+    
     final colors = [azulUnifor, amareloUnifor, Colors.lightBlue];
+    List<PieChartSectionData> sections = [];
     int i = 0;
     
-    for (var d in dados) {
+    for (var d in _dadosPacientes) {
       final total = d['total'] as int? ?? 0;
-      final tipo = d['tipo'] as String? ?? 'Desconhecido';
-      
       if (total > 0) {
-        pieSections.add(
+        final isTouched = i == touchedIndexPiePaciente;
+        final radius = isTouched ? 60.0 : 50.0;
+        final fontSize = isTouched ? 18.0 : 14.0;
+        
+        sections.add(
           PieChartSectionData(
             color: colors[i % colors.length],
             value: total.toDouble(),
             title: '$total',
-            radius: 50,
-            titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+            radius: radius,
+            titleStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold, color: Colors.white),
           )
         );
+        i++;
       }
-      i++;
     }
+    return sections;
   }
 
-  void _buildPieEstoqueChart() {
-    pieEstoqueSections = [];
-    if (totalProdutos == 0) return;
+  List<PieChartSectionData> _getPieEstoqueSections() {
+    if (totalProdutos == 0) {
+      return [PieChartSectionData(color: Colors.grey[300], value: 1, radius: 40, showTitle: false)];
+    }
+    
+    List<PieChartSectionData> sections = [];
+    int index = 0;
     
     if (estoqueNormal > 0) {
-      pieEstoqueSections.add(PieChartSectionData(color: Colors.green, value: estoqueNormal.toDouble(), title: '$estoqueNormal', radius: 50, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)));
+      final isTouched = index == touchedIndexPieEstoque;
+      sections.add(PieChartSectionData(color: Colors.green, value: estoqueNormal.toDouble(), title: '$estoqueNormal', radius: isTouched ? 45.0 : 40.0, titleStyle: TextStyle(fontSize: isTouched ? 16.0 : 14.0, fontWeight: FontWeight.bold, color: Colors.white)));
+      index++;
     }
     if (estoqueBaixo > 0) {
-      pieEstoqueSections.add(PieChartSectionData(color: Colors.orange, value: estoqueBaixo.toDouble(), title: '$estoqueBaixo', radius: 50, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)));
+      final isTouched = index == touchedIndexPieEstoque;
+      sections.add(PieChartSectionData(color: Colors.orange, value: estoqueBaixo.toDouble(), title: '$estoqueBaixo', radius: isTouched ? 45.0 : 40.0, titleStyle: TextStyle(fontSize: isTouched ? 16.0 : 14.0, fontWeight: FontWeight.bold, color: Colors.white)));
+      index++;
     }
     if (semEstoque > 0) {
-      pieEstoqueSections.add(PieChartSectionData(color: Colors.red, value: semEstoque.toDouble(), title: '$semEstoque', radius: 50, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)));
+      final isTouched = index == touchedIndexPieEstoque;
+      sections.add(PieChartSectionData(color: Colors.red, value: semEstoque.toDouble(), title: '$semEstoque', radius: isTouched ? 45.0 : 40.0, titleStyle: TextStyle(fontSize: isTouched ? 16.0 : 14.0, fontWeight: FontWeight.bold, color: Colors.white)));
+      index++;
     }
+    
+    return sections;
   }
 
   void _processarConsultas7Dias(List<Map<String, dynamic>> consultas) {
@@ -170,6 +192,7 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
+    maxAtendimentosDia = maxCount > 0 ? maxCount : 10;
     diaDePico = maxDayIndex != -1 ? dias7Labels[maxDayIndex] : '-';
   }
 
@@ -203,6 +226,12 @@ class _DashboardPageState extends State<DashboardPage> {
       FlSpot(3, (contagemSemanas[2] ?? 0).toDouble()),
       FlSpot(4, (contagemSemanas[3] ?? 0).toDouble()),
     ];
+    
+    double maxVal = 0;
+    for (var spot in lineSpots) {
+      if (spot.y > maxVal) maxVal = spot.y;
+    }
+    maxEvolucaoMensal = maxVal > 0 ? maxVal : 10;
   }
 
   @override
@@ -337,8 +366,19 @@ class _DashboardPageState extends State<DashboardPage> {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: 25,
-                barTouchData: BarTouchData(enabled: false),
+                maxY: (maxAtendimentosDia * 1.2).ceilToDouble(),
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) => Colors.blueGrey,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${dias7Labels[group.x.toInt()]}\n${rod.toY.toInt()} atend.',
+                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+                ),
                 titlesData: FlTitlesData(
                   show: true,
                   bottomTitles: AxisTitles(
@@ -355,7 +395,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                   leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true, reservedSize: 28, interval: 6),
+                    sideTitles: SideTitles(
+                      showTitles: true, 
+                      reservedSize: 35, 
+                      interval: maxAtendimentosDia > 10 ? (maxAtendimentosDia / 4).ceilToDouble() : 2
+                    ),
                   ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -393,11 +437,20 @@ class _DashboardPageState extends State<DashboardPage> {
           Expanded(
             child: PieChart(
               PieChartData(
+                pieTouchData: PieTouchData(
+                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                    setState(() {
+                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                        touchedIndexPiePaciente = -1;
+                        return;
+                      }
+                      touchedIndexPiePaciente = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                    });
+                  },
+                ),
                 sectionsSpace: 2,
                 centerSpaceRadius: 60,
-                sections: pieSections.isEmpty 
-                    ? [PieChartSectionData(color: Colors.grey[300], value: 1, radius: 50, showTitle: false)] 
-                    : pieSections,
+                sections: _getPiePacienteSections(),
               ),
             ),
           ),
@@ -457,12 +510,16 @@ class _DashboardPageState extends State<DashboardPage> {
                       reservedSize: 22,
                       interval: 1,
                       getTitlesWidget: (value, meta) {
-                        return Text('Sem \${value.toInt()}', style: TextStyle(color: Colors.grey[600], fontSize: 12));
+                        return Text('Sem ${value.toInt()}', style: TextStyle(color: Colors.grey[600], fontSize: 12));
                       },
                     ),
                   ),
                   leftTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: true, reservedSize: 28, interval: 20),
+                    sideTitles: SideTitles(
+                      showTitles: true, 
+                      reservedSize: 35, 
+                      interval: maxEvolucaoMensal > 10 ? (maxEvolucaoMensal / 4).ceilToDouble() : 2
+                    ),
                   ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -471,7 +528,21 @@ class _DashboardPageState extends State<DashboardPage> {
                 minX: 1,
                 maxX: 4,
                 minY: 0,
-                maxY: 80,
+                maxY: (maxEvolucaoMensal * 1.2).ceilToDouble(),
+                lineTouchData: LineTouchData(
+                  enabled: true,
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) => Colors.blueGrey,
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        return LineTooltipItem(
+                          '${spot.y.toInt()} atend.',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
                 lineBarsData: [
                   LineChartBarData(
                     spots: lineSpots,
@@ -511,11 +582,20 @@ class _DashboardPageState extends State<DashboardPage> {
           Expanded(
             child: PieChart(
               PieChartData(
+                pieTouchData: PieTouchData(
+                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                    setState(() {
+                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                        touchedIndexPieEstoque = -1;
+                        return;
+                      }
+                      touchedIndexPieEstoque = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                    });
+                  },
+                ),
                 sectionsSpace: 2,
                 centerSpaceRadius: 40,
-                sections: pieEstoqueSections.isEmpty 
-                    ? [PieChartSectionData(color: Colors.grey[300], value: 1, radius: 40, showTitle: false)] 
-                    : pieEstoqueSections,
+                sections: _getPieEstoqueSections(),
               ),
             ),
           ),
