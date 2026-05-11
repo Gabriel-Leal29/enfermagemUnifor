@@ -599,8 +599,8 @@ class _ProdutosPageState extends State<ProdutosPage> {
                             children: [
                               IconButton(
                                 icon: const Icon(
-                                  Icons.edit,
-                                  color: Colors.amber,
+                                  Icons.edit_outlined,
+                                  color: Colors.blue,
                                 ),
                                 tooltip: 'Editar',
                                 onPressed: () {
