@@ -11,6 +11,7 @@ class CampoDropdownWidget<T> extends StatefulWidget {
     this.hintText,
     this.getLabel,
     this.obrigatorio = false,
+    this.possuiBorda = true,
   });
 
   final String label;
@@ -20,6 +21,7 @@ class CampoDropdownWidget<T> extends StatefulWidget {
   final bool obrigatorio;
   final Function(T) onSelected;
   final String Function(T)? getLabel;
+  final bool possuiBorda;
 
   @override
   State<StatefulWidget> createState() => _CampoDropdowmWidgetState<T>();
@@ -43,8 +45,10 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final Color borderColor = _isMenuOpen ? azulUnifor : cinzaFundo;
-    final double borderWidth = _isMenuOpen ? 2 : 1.5;
+    final Color borderColor = _isMenuOpen
+        ? azulUnifor
+        : (widget.possuiBorda ? Colors.grey[300]!: cinzaFundo);
+    final double borderWidth = _isMenuOpen ? 2 : 1;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -56,6 +60,8 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                 Text(widget.label, style: textStyleBlackLabel),
               ],
             ),
+
+            SizedBox(height: 15),
 
             /// Dropdown
             Focus(

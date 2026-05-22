@@ -106,12 +106,11 @@ class _PacientesPageState extends State<PacientesPage> {
     );
   }
 
-void _mostrarModalPaciente({Paciente? paciente}) {
+  void _mostrarModalPaciente({Paciente? paciente}) {
     final nomeController = TextEditingController(text: paciente?.nome ?? "");
     final cpfController = TextEditingController(text: paciente?.cpf ?? "");
     final matriculaController = TextEditingController(text: paciente?.matricula ?? "");
     
-    // 1. Declarada FORA do builder e como "String?" (podendo ser nula) para iniciar vazia
     String? tipoSelecionado = paciente != null ? _getDescricaoTipo(paciente.idTipoPaciente) : null;
 
     var cpfMask = MaskTextInputFormatter(
@@ -123,7 +122,6 @@ void _mostrarModalPaciente({Paciente? paciente}) {
       context: context,
       builder: (context) {
         return StatefulBuilder(
-          // 2. O setStateModal que comanda a atualização do Modal está aqui
           builder: (context, setStateModal) { 
             return AlertDialog(
               backgroundColor: Colors.white,
@@ -138,6 +136,7 @@ void _mostrarModalPaciente({Paciente? paciente}) {
                       CampoTextoWidget(
                         label: "Nome Completo",
                         controller: nomeController,
+                        hintText: "Ex: João da Silva", 
                         obrigatorio: true,
                         mostrarBordaCinza: true,
                       ),
@@ -145,11 +144,11 @@ void _mostrarModalPaciente({Paciente? paciente}) {
                         label: "CPF",
                         controller: cpfController,
                         inputFormatter: [cpfMask],
-                        obrigatorio: true,
-                        mostrarBordaCinza: true,
+                        hintText: "000.000.000-00", 
+                        mostrarBordaCinza: true, 
                       ),
-CampoDropdownWidget<String>(
-                        key: ValueKey(tipoSelecionado), // <-- ADICIONE ESTA LINHA
+                      CampoDropdownWidget<String>(
+                        key: ValueKey(tipoSelecionado), 
                         label: "Tipo de Paciente",
                         hintText: "Selecione", 
                         items: const ['Aluno', 'Funcionário', 'Visitante'],
@@ -164,21 +163,22 @@ CampoDropdownWidget<String>(
                         CampoTextoWidget(
                           label: "Matrícula",
                           controller: matriculaController,
-                          mostrarBordaCinza: true,
+                          hintText: "Ex: 2024001", 
+                          mostrarBordaCinza: true, 
                         ),
                     ],
                   ),
                 ),
               ),
               actions: [
-                TextButton(
+                ButtonAmareloWidget(
+                  texto: "Cancelar",
+                  isCancelamento: true,
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
                 ),
                 ButtonAmareloWidget(
                   texto: "Salvar",
                   onPressed: () async {
-                    // Trava de segurança: impede salvar se o Tipo estiver em branco
                     if (tipoSelecionado == null) {
                       showToast(context, message: "Selecione o tipo de paciente!", type: ToastType.error);
                       return;
@@ -220,9 +220,10 @@ CampoDropdownWidget<String>(
         title: const Text("Atenção"),
         content: Text("Tem certeza que deseja excluir o paciente ${paciente.nome}?"),
         actions: [
-          TextButton(
+          ButtonAmareloWidget(
+            texto: "Cancelar",
+            isCancelamento: true,
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancelar"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: redAlert),
@@ -266,6 +267,7 @@ CampoDropdownWidget<String>(
           const SizedBox(height: 24),
 
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: CampoBuscaWidget(
@@ -277,6 +279,7 @@ CampoDropdownWidget<String>(
               ),
               const SizedBox(width: 16),
               Container(
+                alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 height: 48, 
                 decoration: BoxDecoration(
@@ -287,6 +290,9 @@ CampoDropdownWidget<String>(
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _filtroAtual,
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    focusColor: Colors.transparent,
                     icon: const Icon(Icons.keyboard_arrow_down, color: menuItemNaoSelecionado),
                     items: _filtros.map((String value) {
                       return DropdownMenuItem<String>(
@@ -348,11 +354,11 @@ CampoDropdownWidget<String>(
                   
                   rows: _pacientesFiltrados.map((paciente) {
                     return DataRow(
-                      onSelectChanged: (_) {}, // Habilita o efeito visual de seleção/hover
+                      onSelectChanged: (_) {}, 
                       cells: [
                         DataCell(Text(paciente.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
-                        DataCell(Text(paciente.matricula ?? '-')), 
-                        DataCell(Text(paciente.cpf)),
+                        DataCell(Text(paciente.matricula?.isNotEmpty == true ? paciente.matricula! : '-')), 
+                        DataCell(Text(paciente.cpf.isNotEmpty ? paciente.cpf : '-')),
                         DataCell(_buildBadgeTipo(_getDescricaoTipo(paciente.idTipoPaciente))),
                         DataCell(
                           Row(

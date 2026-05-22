@@ -214,7 +214,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     ),
   );
 
-  // validador de CNPJ
+  
   String? validarCnpj(String? value) {
     if (value == null || value.isEmpty) return null;
     final regex = RegExp(r'^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$');
@@ -224,13 +224,13 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     return null;
   }
 
-  // mascara de CNPJ
+  
   var cnpjMask = MaskTextInputFormatter(
     mask: '##.###.###/####-##',
     filter: { "#": RegExp(r'[0-9]') },
   );
 
-  // validor de telefone
+  
   String? validarTelefone(String? value) {
     if (value == null || value.isEmpty) return null;
     final regex = RegExp(r'^\(\d{2}\)\s\d{5}-\d{4}$');
@@ -241,7 +241,7 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage>{
     return null;
   }
 
-  // máscara de telefone
+  
   var telefoneMask = MaskTextInputFormatter(
     mask: '(##) #####-####',
     filter: { "#": RegExp(r'[0-9]') },

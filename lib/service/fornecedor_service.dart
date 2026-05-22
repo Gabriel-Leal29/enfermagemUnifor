@@ -11,11 +11,8 @@ class FornecedorService {
       throw FornecedorException("O nome fantasia do fornecedor é obrigatório.");
     }
     
-    if (fornecedor.cnpj.trim().isEmpty) {
-      throw FornecedorException("O CNPJ é obrigatório.");
-    }
-
-    if (!CNPJValidator.isValid(fornecedor.cnpj)) {
+    
+    if (fornecedor.cnpj.trim().isNotEmpty && !CNPJValidator.isValid(fornecedor.cnpj)) {
       throw FornecedorException("O CNPJ informado é inválido.");
     }
 
