@@ -75,7 +75,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.white, // Padronizado para branco
+          backgroundColor: Colors.white, 
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text(fornecedor == null ? "Novo Fornecedor" : "Editar Fornecedor", style: textStyleBlackTituloPage),
           content: SizedBox(
@@ -88,28 +88,30 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                     label: "Nome Fantasia",
                     controller: nomeController,
                     obrigatorio: true,
-                    mostrarBordaCinza: true, // Ativado
+                    mostrarBordaCinza: true, 
                   ),
                   CampoTextoWidget(
                     label: "Razão Social",
                     controller: razaoSocialController,
-                    mostrarBordaCinza: true, // Ativado
+                    mostrarBordaCinza: true, 
                   ),
                   CampoTextoWidget(
                     label: "CNPJ",
                     controller: cnpjController,
                     inputFormatter: [cnpjMask],
-                    obrigatorio: true,
-                    mostrarBordaCinza: true, // Ativado
+                    hintText: "00.000.000/0000-00", 
+                    mostrarBordaCinza: true,
                   ),
                 ],
               ),
             ),
           ),
           actions: [
-            TextButton(
+            
+            ButtonAmareloWidget(
+              texto: "Cancelar",
+              isCancelamento: true,
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
             ),
             ButtonAmareloWidget(
               texto: "Salvar",
@@ -147,9 +149,10 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
         title: const Text("Atenção"),
         content: Text("Tem certeza que deseja excluir o fornecedor ${fornecedor.nome}?"),
         actions: [
-          TextButton(
+          ButtonAmareloWidget(
+            texto: "Cancelar",
+            isCancelamento: true,
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancelar"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: redAlert),
@@ -237,11 +240,11 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                   ],
                   rows: _fornecedoresFiltrados.map((fornecedor) {
                     return DataRow(
-                      onSelectChanged: (_) {}, // Habilita o efeito visual de seleção/hover
+                      onSelectChanged: (_) {}, 
                       cells: [
                         DataCell(Text(fornecedor.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
-                        DataCell(Text(fornecedor.razaoSocial ?? '-')), 
-                        DataCell(Text(fornecedor.cnpj)),
+                        DataCell(Text(fornecedor.razaoSocial?.isNotEmpty == true ? fornecedor.razaoSocial! : '-')), 
+                        DataCell(Text(fornecedor.cnpj.isNotEmpty ? fornecedor.cnpj : '-')),
                         DataCell(
                           Row(
                             children: [

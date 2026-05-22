@@ -12,17 +12,13 @@ class PacienteService {
       throw PacienteException("O nome do paciente é obrigatório.");
     }
     
-    if (paciente.cpf.trim().isEmpty) {
-      throw PacienteException("O CPF é obrigatório.");
-    }
-
-    if (!CPFValidator.isValid(paciente.cpf)) {
+    
+    if (paciente.cpf.trim().isNotEmpty && !CPFValidator.isValid(paciente.cpf)) {
       throw PacienteException("O CPF informado é inválido.");
     }
 
     try {
       if (paciente.id == null) {
-        
         await _dao.inserir(paciente);
       } else {
         await _dao.atualizar(paciente);
