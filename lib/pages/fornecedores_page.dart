@@ -24,6 +24,10 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
   List<Fornecedor> _fornecedoresFiltrados = [];
   bool _carregando = true;
 
+  
+  int _paginaAtual = 1;
+  final int _itensPorPagina = 10;
+
   @override
   void initState() {
     super.initState();
@@ -50,8 +54,11 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
         return termoBusca.isEmpty || 
                fornecedor.nome.toLowerCase().contains(termoBusca) || 
                (fornecedor.razaoSocial?.toLowerCase().contains(termoBusca) ?? false) ||
-               fornecedor.cnpj.contains(termoBusca);
+               (fornecedor.cnpj?.toLowerCase().contains(termoBusca) ?? false); 
       }).toList();
+      
+      
+      _paginaAtual = 1;
     });
   }
 
@@ -67,8 +74,11 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
     final cnpjController = TextEditingController(text: fornecedor?.cnpj ?? "");
     
     var cnpjMask = MaskTextInputFormatter(
-      mask: '##.###.###/####-##',
-      filter: { "#": RegExp(r'[0-9]') },
+      mask: 'XX.XXX.XXX/XXXX-NN',
+      filter: {
+        "X": RegExp(r'[A-Za-z0-9]'),
+        "N": RegExp(r'[0-9]')
+      },
     );
 
     showDialog(
@@ -107,7 +117,6 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
             ),
           ),
           actions: [
-            
             ButtonAmareloWidget(
               texto: "Cancelar",
               isCancelamento: true,
@@ -121,7 +130,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                     id: fornecedor?.id, 
                     nome: nomeController.text,
                     razaoSocial: razaoSocialController.text.isEmpty ? null : razaoSocialController.text,
-                    cnpj: cnpjController.text,
+                    cnpj: cnpjController.text.isEmpty ? null : cnpjController.text.toUpperCase(),
                   );
 
                   await _fornecedorService.salvarFornecedor(novoFornecedor);
@@ -132,7 +141,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                     showToast(context, message: "Salvo com sucesso!", type: ToastType.success);
                   }
                 } catch (e) {
-                  showToast(context, message: e.toString(), type: ToastType.error);
+                  showToast(context, message: e.toString().replaceAll("Exception: ", ""), type: ToastType.error);
                 }
               },
             ),
@@ -177,6 +186,18 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
 
   @override
   Widget build(BuildContext context) {
+    
+    final int totalRegistros = _fornecedoresFiltrados.length;
+    int totalPaginas = (totalRegistros / _itensPorPagina).ceil();
+    if (totalPaginas == 0) totalPaginas = 1; 
+
+    int startIndex = (_paginaAtual - 1) * _itensPorPagina;
+    int endIndex = startIndex + _itensPorPagina;
+    if (endIndex > totalRegistros) endIndex = totalRegistros;
+
+    
+    final List<Fornecedor> fornecedoresExibidos = _fornecedoresFiltrados.sublist(startIndex, endIndex);
+
     return PageBase(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,61 +230,105 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
           else if (_fornecedoresFiltrados.isEmpty)
             const Center(child: Text("Nenhum fornecedor encontrado.", style: TextStyle(color: Colors.grey, fontSize: 16)))
           else
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (states.contains(WidgetState.hovered)) {
-                        return azulSelecionadoDropDown.withOpacity(0.3);
-                      }
-                      return null;
-                    },
+            Column(
+              children: [
+                
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
-                  dataRowMinHeight: 60,
-                  dataRowMaxHeight: 60,
-                  horizontalMargin: 24,
-                  columns: const [
-                    DataColumn(label: Text('Nome Fantasia', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('Razão Social', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('CNPJ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                  ],
-                  rows: _fornecedoresFiltrados.map((fornecedor) {
-                    return DataRow(
-                      onSelectChanged: (_) {}, 
-                      cells: [
-                        DataCell(Text(fornecedor.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
-                        DataCell(Text(fornecedor.razaoSocial?.isNotEmpty == true ? fornecedor.razaoSocial! : '-')), 
-                        DataCell(Text(fornecedor.cnpj.isNotEmpty ? fornecedor.cnpj : '-')),
-                        DataCell(
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                                onPressed: () => _mostrarModalFornecedor(fornecedor: fornecedor), 
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: DataTable(
+                      showCheckboxColumn: false,
+                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return azulSelecionadoDropDown.withOpacity(0.3);
+                          }
+                          return null;
+                        },
+                      ),
+                      headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
+                      dataRowMinHeight: 60,
+                      dataRowMaxHeight: 60,
+                      horizontalMargin: 24,
+                      columns: const [
+                        DataColumn(label: Text('Nome Fantasia', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('Razão Social', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('CNPJ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                      ],
+                      
+                      rows: fornecedoresExibidos.map((fornecedor) {
+                        return DataRow(
+                          onSelectChanged: (_) {}, 
+                          cells: [
+                            DataCell(Text(fornecedor.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
+                            DataCell(Text(fornecedor.razaoSocial?.isNotEmpty == true ? fornecedor.razaoSocial! : '-')), 
+                            DataCell(Text(fornecedor.cnpj?.isNotEmpty == true ? fornecedor.cnpj! : '-')),
+                            DataCell(
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                                    onPressed: () => _mostrarModalFornecedor(fornecedor: fornecedor), 
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                    onPressed: () => _confirmarExclusao(fornecedor),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () => _confirmarExclusao(fornecedor),
-                              ),
-                            ],
+                            ),
+                          ],
+                        );
+                      }).toList(), 
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "$totalRegistros registro(s) encontrado(s)",
+                      style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, size: 20),
+                          color: Colors.grey.shade700,
+                          onPressed: _paginaAtual > 1 
+                            ? () => setState(() => _paginaAtual--) 
+                            : null, 
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            "Página $_paginaAtual de $totalPaginas",
+                            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                           ),
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_forward, size: 20),
+                          color: Colors.grey.shade700,
+                          onPressed: _paginaAtual < totalPaginas 
+                            ? () => setState(() => _paginaAtual++) 
+                            : null, 
+                        ),
                       ],
-                    );
-                  }).toList(), 
-                ),
-              ),
+                    )
+                  ],
+                )
+              ],
             ),
         ],
       ),

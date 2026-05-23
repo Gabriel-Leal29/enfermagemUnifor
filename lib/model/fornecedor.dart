@@ -1,14 +1,14 @@
 class Fornecedor {
   final int? id;
-  final String nome; // Nome Fantasia
+  final String nome; 
   final String? razaoSocial; 
-  final String cnpj;
+  final String? cnpj; 
 
   Fornecedor({
     this.id,
     required this.nome,
     this.razaoSocial,
-    required this.cnpj,
+    this.cnpj, 
   });
 
   Map<String, dynamic> toMap() {

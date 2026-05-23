@@ -1,15 +1,15 @@
 class Paciente {
-  final int? id; // pode ser nulo antes de salvar no banco
+  final int? id; 
   final String nome;
-  final String? matricula; // visitante não tem matrícula
-  final String cpf;
-  final int idTipoPaciente; // foreign key pro banco
+  final String? matricula; 
+  final String? cpf; 
+  final int idTipoPaciente; 
 
   Paciente({
     this.id,
     required this.nome,
     this.matricula,
-    required this.cpf,
+    this.cpf, 
     required this.idTipoPaciente,
   });
 
@@ -33,7 +33,7 @@ class Paciente {
     );
   }
 
-  // pra facilitar na hora de editar
+  
   Paciente copyWith({
     int? id,
     String? nome,

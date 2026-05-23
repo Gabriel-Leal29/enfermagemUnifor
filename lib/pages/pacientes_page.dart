@@ -27,6 +27,10 @@ class _PacientesPageState extends State<PacientesPage> {
   List<Paciente> _pacientesFiltrados = []; 
   bool _carregando = true;
 
+  
+  int _paginaAtual = 1;
+  final int _itensPorPagina = 10;
+
   @override
   void initState() {
     super.initState();
@@ -61,10 +65,13 @@ class _PacientesPageState extends State<PacientesPage> {
         final termoBusca = _buscaController.text.toLowerCase();
         final passouFiltroTexto = termoBusca.isEmpty || 
                                   paciente.nome.toLowerCase().contains(termoBusca) || 
-                                  paciente.cpf.contains(termoBusca);
+                                  (paciente.cpf?.contains(termoBusca) ?? false);
 
         return passouFiltroTipo && passouFiltroTexto;
       }).toList();
+      
+      
+      _paginaAtual = 1;
     });
   }
 
@@ -136,7 +143,7 @@ class _PacientesPageState extends State<PacientesPage> {
                       CampoTextoWidget(
                         label: "Nome Completo",
                         controller: nomeController,
-                        hintText: "Ex: João da Silva", 
+                        hintText: "Ex: João da Silva",
                         obrigatorio: true,
                         mostrarBordaCinza: true,
                       ),
@@ -188,7 +195,7 @@ class _PacientesPageState extends State<PacientesPage> {
                       final novoPaciente = Paciente(
                         id: paciente?.id, 
                         nome: nomeController.text,
-                        cpf: cpfController.text,
+                        cpf: cpfController.text.isEmpty ? null : cpfController.text, 
                         matricula: tipoSelecionado == 'Visitante' ? null : matriculaController.text,
                         idTipoPaciente: _getIdTipo(tipoSelecionado!),
                       );
@@ -248,6 +255,18 @@ class _PacientesPageState extends State<PacientesPage> {
 
   @override
   Widget build(BuildContext context) {
+    
+    final int totalRegistros = _pacientesFiltrados.length;
+    int totalPaginas = (totalRegistros / _itensPorPagina).ceil();
+    if (totalPaginas == 0) totalPaginas = 1; 
+
+    int startIndex = (_paginaAtual - 1) * _itensPorPagina;
+    int endIndex = startIndex + _itensPorPagina;
+    if (endIndex > totalRegistros) endIndex = totalRegistros;
+
+    
+    final List<Paciente> pacientesExibidos = _pacientesFiltrados.sublist(startIndex, endIndex);
+
     return PageBase(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,64 +340,107 @@ class _PacientesPageState extends State<PacientesPage> {
           else if (_pacientesFiltrados.isEmpty)
             const Center(child: Text("Nenhum paciente encontrado.", style: TextStyle(color: Colors.grey, fontSize: 16)))
           else
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (states.contains(WidgetState.hovered)) {
-                        return azulSelecionadoDropDown.withOpacity(0.3);
-                      }
-                      return null;
-                    },
+            Column(
+              children: [
+                
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
-                  dataRowMinHeight: 60,
-                  dataRowMaxHeight: 60,
-                  horizontalMargin: 24,
-                  columns: const [
-                    DataColumn(label: Text('Nome', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('Matrícula', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('CPF', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('Tipo', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                  ],
-                  
-                  rows: _pacientesFiltrados.map((paciente) {
-                    return DataRow(
-                      onSelectChanged: (_) {}, 
-                      cells: [
-                        DataCell(Text(paciente.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
-                        DataCell(Text(paciente.matricula?.isNotEmpty == true ? paciente.matricula! : '-')), 
-                        DataCell(Text(paciente.cpf.isNotEmpty ? paciente.cpf : '-')),
-                        DataCell(_buildBadgeTipo(_getDescricaoTipo(paciente.idTipoPaciente))),
-                        DataCell(
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                                onPressed: () => _mostrarModalPaciente(paciente: paciente), 
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: DataTable(
+                      showCheckboxColumn: false,
+                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return azulSelecionadoDropDown.withOpacity(0.3);
+                          }
+                          return null;
+                        },
+                      ),
+                      headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
+                      dataRowMinHeight: 60,
+                      dataRowMaxHeight: 60,
+                      horizontalMargin: 24,
+                      columns: const [
+                        DataColumn(label: Text('Nome', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('Matrícula', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('CPF', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('Tipo', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                        DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                      ],
+                      
+                      rows: pacientesExibidos.map((paciente) {
+                        return DataRow(
+                          onSelectChanged: (_) {}, 
+                          cells: [
+                            DataCell(Text(paciente.nome, style: const TextStyle(fontWeight: FontWeight.w600))),
+                            DataCell(Text(paciente.matricula?.isNotEmpty == true ? paciente.matricula! : '-')), 
+                            DataCell(Text(paciente.cpf?.isNotEmpty == true ? paciente.cpf! : '-')),
+                            DataCell(_buildBadgeTipo(_getDescricaoTipo(paciente.idTipoPaciente))),
+                            DataCell(
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                                    onPressed: () => _mostrarModalPaciente(paciente: paciente), 
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                    onPressed: () => _confirmarExclusao(paciente),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () => _confirmarExclusao(paciente),
-                              ),
-                            ],
+                            ),
+                          ],
+                        );
+                      }).toList(), 
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "$totalRegistros registro(s) encontrado(s)",
+                      style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, size: 20),
+                          color: Colors.grey.shade700,
+                          onPressed: _paginaAtual > 1 
+                            ? () => setState(() => _paginaAtual--) 
+                            : null, 
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            "Página $_paginaAtual de $totalPaginas",
+                            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                           ),
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_forward, size: 20),
+                          color: Colors.grey.shade700,
+                          onPressed: _paginaAtual < totalPaginas 
+                            ? () => setState(() => _paginaAtual++) 
+                            : null, 
+                        ),
                       ],
-                    );
-                  }).toList(), 
-                ),
-              ),
+                    )
+                  ],
+                )
+              ],
             ),
         ],
       ),

@@ -13,7 +13,7 @@ class PacienteService {
     }
     
     
-    if (paciente.cpf.trim().isNotEmpty && !CPFValidator.isValid(paciente.cpf)) {
+    if (paciente.cpf != null && paciente.cpf!.trim().isNotEmpty && !CPFValidator.isValid(paciente.cpf!)) {
       throw PacienteException("O CPF informado é inválido.");
     }
 
@@ -23,11 +23,12 @@ class PacienteService {
       } else {
         await _dao.atualizar(paciente);
       }
-    } catch (e) {
+} catch (e) {
       if (e.toString().contains('UNIQUE constraint failed: paciente.cpf')) {
         throw PacienteException("Já existe um paciente cadastrado com este CPF.");
       }
-      throw PacienteException("Erro ao salvar o paciente. Tente novamente.");
+      
+      throw PacienteException("ERRO REAL: ${e.toString()}");
     }
   }
 

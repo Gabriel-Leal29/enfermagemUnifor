@@ -62,14 +62,14 @@ class DbHelper {
   }
 
   Future<void> _preencherBancoTestes(Database db) async {
-    // 🏢 FORNECEDOR
+    
     final fornecedorId = await db.insert('fornecedor', {
       'nome': 'Fornecedor Geral',
       'razao_social': 'Fornecedor Geral LTDA',
       'cnpj': '12345678000199',
     });
 
-    // 🧑 PACIENTES
+    
     final pacientesIds = <int>[];
 
     pacientesIds.add(
@@ -296,7 +296,7 @@ class DbHelper {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     razao_social TEXT,
-    cnpj TEXT UNIQUE NOT NULL
+    cnpj TEXT UNIQUE 
   )
 ''';
 
@@ -330,7 +330,7 @@ class DbHelper {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
     matricula TEXT,
-    cpf TEXT UNIQUE NOT NULL,
+    cpf TEXT UNIQUE,
     id_tipo_paciente INTEGER NOT NULL,
     FOREIGN KEY (id_tipo_paciente) REFERENCES tipo_paciente(id)
   )
