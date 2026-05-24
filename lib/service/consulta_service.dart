@@ -16,14 +16,31 @@ import '../model/gerenciador_estoque.dart';
 import '../service/produtos_service.dart';   // novos imports do meu gerenciador e produtos
 
 class ConsultaService {
-  final ConsultaDao _consultaDao = ConsultaDao();
-  final ProdutoDao _produtoDao = ProdutoDao();
-  final PacienteDao _pacienteDao = PacienteDao();
-  final ConsultaProdutoDao _produtoConsultaDao = ConsultaProdutoDao();
-  
-  final GerenciadorEstoqueDao _estoqueDao = GerenciadorEstoqueDao();  //1° chamando o dao e o service de gerenciador e de produtos
+  final ConsultaDao _consultaDao;
+  final ProdutoDao _produtoDao;
+  final PacienteDao _pacienteDao;
+  final ConsultaProdutoDao _produtoConsultaDao;
 
-  late final ProdutosService _produtosService = ProdutosService(_produtoDao);
+  final GerenciadorEstoqueDao _estoqueDao;  //1° chamando o dao e o service de gerenciador e de produtos
+
+  late final ProdutosService _produtosService;
+
+  // construtor para os test
+  ConsultaService({
+    ConsultaDao? consultaDao,
+    ProdutoDao? produtoDao,
+    PacienteDao? pacienteDao,
+    ConsultaProdutoDao? produtoConsultaDao,
+    GerenciadorEstoqueDao? estoqueDao,
+    ProdutosService? produtosService,
+  })  : _consultaDao = consultaDao ?? ConsultaDao(),
+        _produtoDao = produtoDao ?? ProdutoDao(),
+        _pacienteDao = pacienteDao ?? PacienteDao(),
+        _produtoConsultaDao =
+            produtoConsultaDao ?? ConsultaProdutoDao(),
+        _estoqueDao = estoqueDao ?? GerenciadorEstoqueDao(),
+        _produtosService =
+            produtosService ?? ProdutosService(produtoDao ?? ProdutoDao());
 
   Future<void> criarConsultaCompleta(ConsultaDetails dto) async {
     try {
@@ -64,7 +81,7 @@ class ConsultaService {
         );
       }
 
-    } catch (e) {
+    } catch (_) {
       throw ConsultaException("Erro ao salvar a consulta!");
     }
   }
@@ -176,7 +193,6 @@ class ConsultaService {
         );
       }).toList();
     } catch (e) {
-      print(e);
       throw ConsultaException("Erro ao listar consultas paginadas!");
     }
   }
