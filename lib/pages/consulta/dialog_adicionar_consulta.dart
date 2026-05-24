@@ -128,6 +128,7 @@ class _DialogAdicionarConsultaState extends State<DialogAdicionarConsulta> {
 
     if (quantidade <= 0) {
       showToast(context, message: "A quantidade deve ser maior que 0!", type: ToastType.warning);
+      return;
     }
 
 

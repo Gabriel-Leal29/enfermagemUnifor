@@ -242,20 +242,25 @@ class ConsultaPageState extends State<ConsultaPage>{
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: CampoBuscaWidget(
-                      onChanged: (value) {
-                        _aplicarFiltro();
-                      },
-                      texto: "Buscar por nome...",
-                      prefixIcon: Icons.search_rounded,
-                      controller: _buscaController
+                  child: Column(
+                    children: [
+                      SizedBox(height: 60), // espaço do label do CampoTextoWidget
+
+                      CampoBuscaWidget(
+                          onChanged: (value) {
+                            _aplicarFiltro();
+                          },
+                          texto: "Buscar por nome...",
+                          prefixIcon: Icons.search_rounded,
+                          controller: _buscaController
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(width: 12),
 
                 Expanded(
-                  //width: 200,
                   child: CampoTextoWidget(
                     label: "",
                     hintText: "Data inicial",
@@ -270,7 +275,6 @@ class ConsultaPageState extends State<ConsultaPage>{
                 const SizedBox(width: 12),
 
                 Expanded(
-                  //width: 200,
                   child: CampoTextoWidget(
                     label: "",
                     hintText: "Data final",

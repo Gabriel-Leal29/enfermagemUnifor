@@ -154,6 +154,9 @@ class _PacientesPageState extends State<PacientesPage> {
                         hintText: "000.000.000-00", 
                         mostrarBordaCinza: true, 
                       ),
+
+                      SizedBox(height: 15,),
+
                       CampoDropdownWidget<String>(
                         key: ValueKey(tipoSelecionado), 
                         label: "Tipo de Paciente",
@@ -289,11 +292,17 @@ class _PacientesPageState extends State<PacientesPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: CampoBuscaWidget(
-                  controller: _buscaController,
-                  texto: "Buscar por nome ou CPF...",
-                  prefixIcon: Icons.search_rounded,
-                  onChanged: (value) => _filtrarPacientes(),
+                child: Column(
+                  children: [
+                    SizedBox(height: 10), // espaço do label do CampoTextoWidget
+
+                    CampoBuscaWidget(
+                      controller: _buscaController,
+                      texto: "Buscar por nome ou CPF...",
+                      prefixIcon: Icons.search_rounded,
+                      onChanged: (value) => _filtrarPacientes(),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 16),
@@ -404,40 +413,51 @@ class _PacientesPageState extends State<PacientesPage> {
                 ),
                 
                 const SizedBox(height: 16),
-                
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Text(
-                      "$totalRegistros registro(s) encontrado(s)",
-                      style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "$totalRegistros registro(s) encontrado(s)",
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         IconButton(
                           icon: const Icon(Icons.arrow_back, size: 20),
                           color: Colors.grey.shade700,
-                          onPressed: _paginaAtual > 1 
-                            ? () => setState(() => _paginaAtual--) 
-                            : null, 
+                          onPressed: _paginaAtual > 1
+                              ? () => setState(() => _paginaAtual--)
+                              : null,
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text(
                             "Página $_paginaAtual de $totalPaginas",
-                            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.arrow_forward, size: 20),
                           color: Colors.grey.shade700,
-                          onPressed: _paginaAtual < totalPaginas 
-                            ? () => setState(() => _paginaAtual++) 
-                            : null, 
+                          onPressed: _paginaAtual < totalPaginas
+                              ? () => setState(() => _paginaAtual++)
+                              : null,
                         ),
                       ],
-                    )
+                    ),
                   ],
                 )
               ],

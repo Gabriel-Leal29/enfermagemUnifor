@@ -225,11 +225,17 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
             children: [
               Expanded(
                 flex: 3,
-                child: CampoBuscaWidget(
-                  texto: "Pesquisar por NFe",
-                  prefixIcon: Icons.search_rounded,
-                  controller: _buscaController,
-                  onChanged: (val) => _filtrarLista(),
+                child: Column(
+                  children: [
+                    SizedBox(height: 69),
+
+                    CampoBuscaWidget(
+                      texto: "Pesquisar por NFe",
+                      prefixIcon: Icons.search_rounded,
+                      controller: _buscaController,
+                      onChanged: (val) => _filtrarLista(),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 12), // Trocado 16 por 12

@@ -132,7 +132,7 @@ class _CampoDropdowmWidgetState<T> extends State<CampoDropdownWidget<T>> {
                       ),
                       child: Row(
                         children: [
-Expanded(
+                          Expanded(
                             child: Text(
                               widget.value != null
                                   ? (widget.getLabel != null 

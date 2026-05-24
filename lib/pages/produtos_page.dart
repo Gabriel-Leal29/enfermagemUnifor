@@ -396,12 +396,19 @@ class _ProdutosPageState extends State<ProdutosPage> {
             children: [
               Expanded(
                 flex: 3,
-                child: CampoBuscaWidget(
-                  texto: "Pesquisar Produto",
-                  prefixIcon: Icons.search_rounded,
-                  controller: _buscaController,
-                  onChanged: _filtrarLista,
-                ),
+                child: Column(
+                    children: [
+                      SizedBox(height: 48), // espaço do label do CampoTextoWidget
+
+                        CampoBuscaWidget(
+                          texto: "Pesquisar Produto",
+                          prefixIcon: Icons.search_rounded,
+                          controller: _buscaController,
+                          onChanged: _filtrarLista,
+                        ),
+
+                    ],
+                  ),
               ),
               const SizedBox(width: 12),
               Expanded(

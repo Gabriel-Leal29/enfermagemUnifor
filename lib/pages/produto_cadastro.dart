@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:projeto_enfermagem_desktop/model/produto.dart';
 import 'package:projeto_enfermagem_desktop/model/tipo_produto.dart';
 import 'package:projeto_enfermagem_desktop/dao/tipo_produto_dao.dart';
@@ -168,7 +169,7 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
           linha.idFornecedor == null ||
           linha.idTipoProduto == null) {
         _mostrarToast(
-          "Preencha todos os campos obrigatórios da linha ${i + 1}.",
+          "Preencha todos os campos da linha ${i + 1}.",
           ToastType.error,
         );
         return;
@@ -238,7 +239,7 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
       hintStyle: const TextStyle(color: coolGrey3, fontSize: 14),
       filled: true,
       fillColor: cinzaFundo,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: cinzaFundo, width: 1.5),
@@ -534,17 +535,25 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
                         onFieldSubmitted,
                       ) {
                         linha.nomeController = textEditingController;
-                        return TextFormField(
-                          controller: textEditingController,
-                          focusNode: focusNode,
-                          decoration: _customInputDecoration(
-                            'Digite o nome...',
-                          ),
-                          onChanged: (texto) {
-                            setState(() {
-                              _verificarSeProdutoExiste(linha);
-                            });
-                          },
+                        return Column(
+                          children: [
+                            SizedBox(height: 13),
+
+                            TextFormField(
+                              controller: textEditingController,
+                              focusNode: focusNode,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1,
+                              ),
+                              decoration: _customInputDecoration('Digite o nome...'),
+                              onChanged: (texto) {
+                                setState(() {
+                                  _verificarSeProdutoExiste(linha);
+                                });
+                              },
+                            ),
+                          ]
                         );
                       },
                 ),
@@ -649,12 +658,21 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
               children: [
                 const Text('', style: TextStyle(fontSize: 16, height: 1.15)),
                 const SizedBox(height: 6),
-                TextFormField(
-                  controller: linha.qtdController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: _customInputDecoration('0'),
+                Column(
+                  children: [
+                    SizedBox(height: 13),
+
+                    TextFormField(
+                      controller: linha.qtdController,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: _customInputDecoration('0'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -663,28 +681,34 @@ class _ProdutoCadastroState extends State<ProdutoCadastro> {
           const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(top: 26.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Column(
               children: [
-                if (_linhasDeItens.length > 1)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.remove_circle,
-                      color: Colors.red,
-                      size: 36,
-                    ),
-                    onPressed: () => _removerLinha(index),
-                    tooltip: 'Remover este produto',
-                  ),
+                SizedBox(height: 10),
 
-                IconButton(
-                  icon: const Icon(
-                    Icons.add_circle,
-                    color: Color(0xFF0038A8),
-                    size: 36,
-                  ),
-                  onPressed: _adicionarNovaLinha,
-                  tooltip: 'Adicionar outro produto',
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_linhasDeItens.length > 1)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.remove_circle,
+                          color: Colors.red,
+                          size: 36,
+                        ),
+                        onPressed: () => _removerLinha(index),
+                        tooltip: 'Remover este produto',
+                      ),
+
+                    IconButton(
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: Color(0xFF0038A8),
+                        size: 36,
+                      ),
+                      onPressed: _adicionarNovaLinha,
+                      tooltip: 'Adicionar outro produto',
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -25,8 +25,6 @@ class DbHelper {
 
     print("CAMINHO DO BANCO DE DADOS: $path");
 
-  await deleteDatabase(path);
-
     return await openDatabase(
       path,
       version: 1,
