@@ -148,10 +148,14 @@ class ImpressaoService {
               style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 8),
-            pw.Text(c.demanda),
+            if(c.demanda.isNotEmpty)
+              pw.Text(c.demanda),
 
             if(c.observacao != null)
               pw.Text("${c.observacao}"),
+
+            if(c.observacao == null && c.demanda.isEmpty)
+              pw.Text("Nenhuma queixa ou observação inserida na consulta"),
 
             pw.SizedBox(height: 20),
 

@@ -149,9 +149,16 @@ class ConsultaService {
 
       final consultas = await _consultaDao.listarPaginado(pageSize, offset);
 
-      final pacientes = await _pacienteDao.listarTodos();
-      final consultaProdutos = await _produtoConsultaDao.listarTodos();
-      final produtos = await _produtoDao.listarTodos();
+      if (consultas.isEmpty) return [];
+
+      final consultaIds = consultas.map((c) => c.id!).toList();
+      final pacienteIds = consultas.map((c) => c.idPaciente).toSet().toList();
+
+      final pacientes = await _pacienteDao.listarPorIds(pacienteIds);
+      final consultaProdutos = await _produtoConsultaDao.listarPorConsultas(consultaIds);
+      final produtoIds = consultaProdutos.map((cp) => cp.idProduto).toSet().toList();
+
+      final produtos = await _produtoDao.listarPorIds(produtoIds);
 
       final pacientesMap = _mapearPacientes(pacientes);
       final produtosMap = _mapearProdutosLista(produtos);

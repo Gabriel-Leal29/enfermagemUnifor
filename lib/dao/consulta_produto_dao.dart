@@ -16,6 +16,18 @@ class ConsultaProdutoDao {
     return result.map((map) => ConsultaProduto.fromMap(map)).toList();
   }
 
+  Future<List<ConsultaProduto>> listarPorConsultas(List<int> ids) async {
+    final db = await DbHelper.instance.database;
+
+    return await db.query(
+      'consulta_produto',
+      where: 'id_consulta IN (${List.filled(ids.length, '?').join(',')})',
+      whereArgs: ids,
+    ).then(
+          (list) => list.map((e) => ConsultaProduto.fromMap(e)).toList(),
+    );
+  }
+
   Future<void> deletarPorConsulta(int idConsulta) async {
     final db = await DbHelper.instance.database;
 

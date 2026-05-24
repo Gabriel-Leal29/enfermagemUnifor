@@ -19,6 +19,18 @@ class PacienteDao {
     return result.map((map) => Paciente.fromMap(map)).toList();
   }
 
+  Future<List<Paciente>> listarPorIds(List<int> ids) async {
+    final db = await DbHelper.instance.database;
+
+    return await db.query(
+      'paciente',
+      where: 'id IN (${List.filled(ids.length, '?').join(',')})',
+      whereArgs: ids,
+    ).then(
+          (list) => list.map((e) => Paciente.fromMap(e)).toList(),
+    );
+  }
+
   
   Future<int> atualizar(Paciente paciente) async {
     final db = await DbHelper.instance.database;

@@ -1,6 +1,5 @@
 import '../database/db_helper.dart';
 import '../model/produto.dart';
-import 'package:sqflite/sqflite.dart';
 
 class ProdutoDao {
   Future<int> inserir(Produto produto) async {
@@ -28,6 +27,20 @@ class ProdutoDao {
 
     final List<Map<String, dynamic>> maps = await db.query('produto');
     return maps.map((map) => Produto.fromMap(map)).toList();
+  }
+
+  Future<List<Produto>> listarPorIds(List<int> ids) async {
+    final db = await DbHelper.instance.database;
+
+    if (ids.isEmpty) return [];
+
+    final result = await db.query(
+      'produto',
+      where: 'id IN (${List.filled(ids.length, '?').join(',')})',
+      whereArgs: ids,
+    );
+
+    return result.map((e) => Produto.fromMap(e)).toList();
   }
 
   Future<List<Produto>> listarAtivos() async {
