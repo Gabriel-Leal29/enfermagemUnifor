@@ -4,7 +4,11 @@ import '../exceptions/paciente_exception.dart';
 import '../model/paciente.dart';
 
 class PacienteService {
-  final PacienteDao _dao = PacienteDao();
+  final PacienteDao _dao;
+
+  PacienteService({
+    PacienteDao? dao,
+  }) : _dao = dao ?? PacienteDao();
 
   Future<void> salvarPaciente(Paciente paciente) async {
     

@@ -46,11 +46,12 @@ class DbHelper {
     
 
     await _inserirDadosIniciais(db);
-    await _preencherBancoTestes(db);
+    //await _preencherBancoTestes(db);
   }
 
   Future<void> _inserirDadosIniciais(Database db) async {
     await db.insert('usuario', {'login': 'admin', 'senha': '123'});
+    await db.insert('usuario', {'login': 'Larissa', 'senha': 'unifor2026'});
 
     await db.insert('tipo_produto', {'descricao': 'UND'});
 
