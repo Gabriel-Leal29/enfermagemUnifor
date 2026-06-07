@@ -21,7 +21,7 @@ O sistema tem como objetivo substituir os registros manuais realizados em cadern
 * Identificação por tipo:
 
   * 🎓 Aluno
-  * 👨‍🏫 Professor
+  * 👨‍🏫 Funcionário
   * 🚶 Visitante
 * Validação de CPF
 
