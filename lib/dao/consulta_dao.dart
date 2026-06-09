@@ -124,8 +124,6 @@ class ConsultaDao {
         .toList();
   }
 
-
-
   Future<void> atualizar(Consulta consulta) async {
     final db = await DbHelper.instance.database;
     return await db.update(

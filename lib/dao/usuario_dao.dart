@@ -1,19 +1,30 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:bcrypt/bcrypt.dart';
 import '../database/db_helper.dart';
 import '../model/usuario.dart';
 
 class UsuarioDao {
   Future<Usuario?> login(String login, String senha) async {
-    Database db = await DbHelper.instance.database;
-    List<Map<String, dynamic>> maps = await db.query(
+    final db = await DbHelper.instance.database;
+
+    final result = await db.query(
       'usuario',
-      where: 'login = ? AND senha = ?',
-      whereArgs: [login, senha],
+      where: 'login = ?',
+      whereArgs: [login],
     );
 
-    if (maps.isNotEmpty) {
-      return Usuario.fromMap(maps.first);
+    if (result.isEmpty) return null;
+
+    final usuario = Usuario.fromMap(result.first);
+
+    final senhaCorreta = BCrypt.checkpw(
+      senha,
+      usuario.senha,
+    );
+
+    if (!senhaCorreta) {
+      return null;
     }
-    return null;
+
+    return usuario;
   }
 }

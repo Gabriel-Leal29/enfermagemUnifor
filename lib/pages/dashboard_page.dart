@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -46,7 +48,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _carregarDados();
+    unawaited(_carregarDados());
   }
 
   Future<void> _carregarDados() async {
@@ -437,17 +439,26 @@ class _DashboardPageState extends State<DashboardPage> {
           Expanded(
             child: PieChart(
               PieChartData(
-                pieTouchData: PieTouchData(
-                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                    setState(() {
-                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
-                        touchedIndexPiePaciente = -1;
-                        return;
-                      }
-                      touchedIndexPiePaciente = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                    });
-                  },
-                ),
+                pieTouchData: PieTouchData(enabled: false),
+                // pieTouchData: PieTouchData(
+                //   touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                //     WidgetsBinding.instance.addPostFrameCallback((_) {
+                //       if (!mounted) return;
+                //
+                //       setState(() {
+                //         if (!event.isInterestedForInteractions ||
+                //             pieTouchResponse == null ||
+                //             pieTouchResponse.touchedSection == null) {
+                //           touchedIndexPiePaciente = -1;
+                //           return;
+                //         }
+                //
+                //         touchedIndexPiePaciente =
+                //             pieTouchResponse.touchedSection!.touchedSectionIndex;
+                //       });
+                //     });
+                //   },
+                // ),
                 sectionsSpace: 2,
                 centerSpaceRadius: 60,
                 sections: _getPiePacienteSections(),
@@ -582,17 +593,26 @@ class _DashboardPageState extends State<DashboardPage> {
           Expanded(
             child: PieChart(
               PieChartData(
-                pieTouchData: PieTouchData(
-                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                    setState(() {
-                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
-                        touchedIndexPieEstoque = -1;
-                        return;
-                      }
-                      touchedIndexPieEstoque = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                    });
-                  },
-                ),
+                pieTouchData: PieTouchData(enabled: false),
+                // pieTouchData: PieTouchData(
+                //   touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                //     WidgetsBinding.instance.addPostFrameCallback((_) {
+                //       if (!mounted) return;
+                //
+                //       setState(() {
+                //         if (!event.isInterestedForInteractions ||
+                //             pieTouchResponse == null ||
+                //             pieTouchResponse.touchedSection == null) {
+                //           touchedIndexPiePaciente = -1;
+                //           return;
+                //         }
+                //
+                //         touchedIndexPiePaciente =
+                //             pieTouchResponse.touchedSection!.touchedSectionIndex;
+                //       });
+                //     });
+                //   },
+                // ),
                 sectionsSpace: 2,
                 centerSpaceRadius: 40,
                 sections: _getPieEstoqueSections(),

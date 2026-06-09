@@ -1,5 +1,6 @@
 // padrão singleton
 import 'dart:io';
+import 'package:bcrypt/bcrypt.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -43,15 +44,21 @@ class DbHelper {
     await db.execute(_gerenciarEstoque);
     await db.execute(_consulta);
     await db.execute(_consultaProduto);
-    
 
     await _inserirDadosIniciais(db);
     //await _preencherBancoTestes(db);
   }
 
   Future<void> _inserirDadosIniciais(Database db) async {
-    await db.insert('usuario', {'login': 'admin', 'senha': '123'});
-    await db.insert('usuario', {'login': 'Larissa', 'senha': 'unifor2026'});
+    await db.insert('usuario', {
+      'login': 'admin',
+      'senha': BCrypt.hashpw('123', BCrypt.gensalt()),
+    });
+
+    await db.insert('usuario', {
+      'login': 'Larissa',
+      'senha': BCrypt.hashpw('unifor2026', BCrypt.gensalt()),
+    });
 
     await db.insert('tipo_produto', {'descricao': 'UND'});
 
