@@ -80,8 +80,8 @@ class _DialogAdicionarConsultaState extends State<DialogAdicionarConsulta> {
 
   Future<void> _selecionarData(BuildContext context) async {
     final DateTime agora = DateTime.now();
-    final DateTime dataMinima = agora.subtract(const Duration(days: 15));
-    final DateTime dataMaxima = agora.add(const Duration(days: 60));
+    final DateTime dataMinima = DateTime(agora.year - 100);
+    final DateTime dataMaxima = DateTime(agora.year + 100);
 
     final DateTime? colhida = await showDatePicker(
       context: context,

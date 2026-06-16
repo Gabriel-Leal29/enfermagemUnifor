@@ -28,8 +28,9 @@ class DbHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -48,6 +49,67 @@ class DbHelper {
     await _inserirDadosIniciais(db);
     //await _preencherBancoTestes(db);
   }
+
+  Future<void> _onUpgrade(
+      Database db,
+      int oldVersion,
+      int newVersion,
+      ) async {
+
+    if (oldVersion < 2) {
+      await _migrarSenhasParaBcrypt(db);
+      await _criarUsuarioLarissa(db);
+    }
+
+  }
+
+  Future<void> _migrarSenhasParaBcrypt(Database db) async {
+
+    final usuarios = await db.query('usuario');
+
+    for (final usuario in usuarios) {
+
+      final senhaAtual = usuario['senha'] as String;
+
+      // já está criptografada?
+      if (senhaAtual.startsWith(r'$2')) {
+        continue;
+      }
+
+      final senhaHash =
+      BCrypt.hashpw(senhaAtual, BCrypt.gensalt());
+
+      await db.update(
+        'usuario',
+        {'senha': senhaHash},
+        where: 'id = ?',
+        whereArgs: [usuario['id']],
+      );
+    }
+  }
+
+  Future<void> _criarUsuarioLarissa(Database db) async {
+
+    final existe = await db.query(
+      'usuario',
+      where: 'login = ?',
+      whereArgs: ['Larissa'],
+    );
+
+    if (existe.isEmpty) {
+      await db.insert(
+        'usuario',
+        {
+          'login': 'Larissa',
+          'senha': BCrypt.hashpw(
+            'unifor2026',
+            BCrypt.gensalt(),
+          ),
+        },
+      );
+    }
+  }
+
 
   Future<void> _inserirDadosIniciais(Database db) async {
     await db.insert('usuario', {
