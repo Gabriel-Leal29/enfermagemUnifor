@@ -21,6 +21,21 @@ class ConsultaDao {
         .toList();
   }
 
+  Future<List<Consulta>> listarPorPaciente(int idPaciente) async {
+    final db = await DbHelper.instance.database;
+
+    final List<Map<String, dynamic>> result = await db.query(
+      'consulta',
+      where: 'id_paciente = ?',
+      whereArgs: [idPaciente],
+      orderBy: 'data DESC',
+    );
+
+    return result
+        .map<Consulta>((map) => Consulta.fromMap(map))
+        .toList();
+  }
+
   // Métodos da paginação
 
   Future<int> contar() async {
@@ -126,7 +141,7 @@ class ConsultaDao {
 
   Future<void> atualizar(Consulta consulta) async {
     final db = await DbHelper.instance.database;
-    return await db.update(
+    await db.update(
       'consulta',
       consulta.toMap(),
       where: 'id = ?',
@@ -136,7 +151,7 @@ class ConsultaDao {
 
   Future<void> excluir(int id) async {
     final db = await DbHelper.instance.database;
-    return await db.delete(
+    await db.delete(
       'consulta',
       where: 'id = ?',
       whereArgs: [id],

@@ -1,7 +1,5 @@
-import 'package:projeto_enfermagem_desktop/model/produto.dart';
 import '../model/gerenciador_estoque.dart';
 import '../database/db_helper.dart';
-import '../model/gerenciador_estoque.dart';
 
 class GerenciadorEstoqueDao {
   Future<int> inserirGerenciadorEstoque(
@@ -16,7 +14,7 @@ class GerenciadorEstoqueDao {
     GerenciadorEstoque gerenciadorEstoque,
   ) async {
     final db = await DbHelper.instance.database;
-    return await db.update(
+    await db.update(
       'gerenciar_estoque',
       gerenciadorEstoque.toMap(),
       where: 'id = ?',

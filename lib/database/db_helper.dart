@@ -12,8 +12,8 @@ class DbHelper {
 
   static Database? _database; // instancia do SQLite
 
-  get database async {
-    if (_database != null) return _database;
+  Future<Database> get database async {
+    if (_database != null) return _database!;
 
     _database = await _initDatabase();
     return _database!;

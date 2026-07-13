@@ -5,7 +5,7 @@ class ConsultaProdutoDao {
   Future<void> inserir(ConsultaProduto consultaProduto) async {
     final db = await DbHelper.instance.database;
 
-    return await db.insert('consulta_produto', consultaProduto.toMap());
+    await db.insert('consulta_produto', consultaProduto.toMap());
   }
 
   Future<List<ConsultaProduto>> listarTodos() async {
@@ -40,7 +40,7 @@ class ConsultaProdutoDao {
 
   Future<void> excluir(int id) async {
     final db = await DbHelper.instance.database;
-    return await db.delete(
+    await db.delete(
       'consulta_produto',
       where: 'id_consulta = ?',
       whereArgs: [id],
