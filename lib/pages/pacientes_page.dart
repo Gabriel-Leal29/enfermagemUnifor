@@ -9,6 +9,7 @@ import '../widgets/button_amarelo_widget.dart';
 import '../widgets/campo_drop_down_widget.dart';
 import '../widgets/campo_texto_widget.dart';
 import '../widgets/campo_busca_widget.dart';
+import 'consulta/dialog_historico_consulta.dart';
 
 class PacientesPage extends StatefulWidget {
   const PacientesPage({super.key});
@@ -223,6 +224,13 @@ class _PacientesPageState extends State<PacientesPage> {
     );
   }
 
+  void _mostrarHistoricoConsultas(Paciente paciente) {
+    showDialog(
+      context: context,
+      builder: (context) => DialogHistoricoConsulta(paciente: paciente),
+    );
+  }
+
   void _confirmarExclusao(Paciente paciente) {
     showDialog(
       context: context,
@@ -351,7 +359,6 @@ class _PacientesPageState extends State<PacientesPage> {
           else
             Column(
               children: [
-                
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -366,7 +373,7 @@ class _PacientesPageState extends State<PacientesPage> {
                       dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                         (states) {
                           if (states.contains(WidgetState.hovered)) {
-                            return azulSelecionadoDropDown.withOpacity(0.3);
+                            return azulSelecionadoDropDown.withValues(alpha: 0.3);
                           }
                           return null;
                         },
@@ -395,13 +402,18 @@ class _PacientesPageState extends State<PacientesPage> {
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                                      icon: Icon(Icons.info_outline, color: Colors.blue),
+                                      onPressed: () => _mostrarHistoricoConsultas(paciente),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.edit_outlined, color: amareloUnifor),
                                     onPressed: () => _mostrarModalPaciente(paciente: paciente), 
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete_outline, color: Colors.red),
                                     onPressed: () => _confirmarExclusao(paciente),
                                   ),
+
                                 ],
                               ),
                             ),

@@ -247,7 +247,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                       dataRowColor: WidgetStateProperty.resolveWith<Color?>(
                         (states) {
                           if (states.contains(WidgetState.hovered)) {
-                            return azulSelecionadoDropDown.withOpacity(0.3);
+                            return azulSelecionadoDropDown.withValues(alpha: 0.3);
                           }
                           return null;
                         },
@@ -274,7 +274,7 @@ class _FornecedoresPageState extends State<FornecedoresPage> {
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                                    icon: Icon(Icons.edit_outlined, color: amareloUnifor),
                                     onPressed: () => _mostrarModalFornecedor(fornecedor: fornecedor), 
                                   ),
                                   IconButton(

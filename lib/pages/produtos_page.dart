@@ -459,7 +459,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
                     states,
                   ) {
                     if (states.contains(WidgetState.hovered)) {
-                      return azulSelecionadoDropDown.withOpacity(0.3);
+                      return azulSelecionadoDropDown.withValues(alpha: 0.3);
                     }
                     return null;
                   }),
@@ -605,9 +605,9 @@ class _ProdutosPageState extends State<ProdutosPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.edit_outlined,
-                                  color: Colors.blue,
+                                  color: amareloUnifor,
                                 ),
                                 tooltip: 'Editar',
                                 onPressed: () {

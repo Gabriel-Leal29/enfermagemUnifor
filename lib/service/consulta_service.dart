@@ -197,6 +197,39 @@ class ConsultaService {
     }
   }
 
+  Future<List<ConsultaDetails>> listarConsultasPorPaciente(Paciente paciente) async {
+    try {
+      final consultas = await _consultaDao.listarPorPaciente(paciente.id!);
+
+      if (consultas.isEmpty) return [];
+
+      final consultaIds = consultas.map((c) => c.id!).toList();
+
+      final consultaProdutos = await _produtoConsultaDao.listarPorConsultas(consultaIds);
+      final produtoIds = consultaProdutos.map((cp) => cp.idProduto).toSet().toList();
+
+      final produtos = await _produtoDao.listarPorIds(produtoIds);
+
+      final produtosMap = _mapearProdutosLista(produtos);
+      final medicamentosMap = _mapearProdutos(consultaProdutos, produtosMap);
+
+      return consultas.map((c) {
+        return ConsultaDetails(
+          id: c.id!,
+          responsavel: c.responsavel,
+          observacao: c.observacao,
+          demanda: c.demanda,
+          data: c.data,
+          paciente: paciente,
+          produtos: medicamentosMap[c.id] ?? [],
+        );
+      }).toList();
+    } catch (e) {
+      print(e);
+      throw ConsultaException("Erro ao listar o histórico de consultas do paciente!");
+    }
+  }
+
   Future<int> getTotalConsultasComFiltro(ConsultaFiltro filtro) async {
     try {
       return await _consultaDao.countComFiltro(filtro);
