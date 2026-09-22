@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/material.dart'; // Necessário para a renderização do modal UI
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -13,41 +14,85 @@ class ImpressaoService {
   final ConfigService _configService = ConfigService();
   Config? dados;
 
-  Future<void> imprimirConsulta(ConsultaDetails consulta) async {
+  // Recebe BuildContext para acionar o modal antes da impressão nativa
+  Future imprimirConsulta(BuildContext context, ConsultaDetails consulta) async {
     try {
       dados = await _configService.buscarConfiguracoes();
       final pdfBytes = await _gerarPdf(consulta);
+      final nomeImpressora = dados?.impressora;
 
-      final nomeImpressora = dados!.impressora;
+      if (!context.mounted) return;
 
-      if (nomeImpressora != null && nomeImpressora.isNotEmpty && nomeImpressora != "Nenhuma") {
-        final printers = await _configService.listarImpressoras();
-
-        final printer = printers.firstWhere(
-              (p) => p.name == nomeImpressora,
-        );
-
-        await Printing.directPrintPdf(
-          printer: printer,
-          onLayout: (format) async =>
-              Uint8List.fromList(pdfBytes),
-        );
-
-        return;
-      }
-
-      // diálogo padrão caso n abra a impressora
-      await Printing.layoutPdf(
-        onLayout: (format) async =>
-            Uint8List.fromList(pdfBytes),
+      // Diálogo de Validação de PDF (Telinha)
+      await showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text("Pré-visualização do Relatório Médico"),
+            content: SizedBox(
+              width: MediaQuery.of(dialogContext).size.width * 0.7,
+              height: MediaQuery.of(dialogContext).size.height * 0.8,
+              child: PdfPreview(
+                build: (format) async => Uint8List.fromList(pdfBytes),
+                allowSharing: false,
+                allowPrinting: false, // Desabilita barra de impressão genérica para utilizar regras de configuração
+                canChangePageFormat: false,
+                canChangeOrientation: false,
+                canDebug: false,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text("Cancelar", style: TextStyle(color: Colors.red)),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                icon: const Icon(Icons.print, color: Colors.white),
+                label: const Text("Confirmar e Imprimir", style: TextStyle(color: Colors.white)),
+                onPressed: () async {
+                  Navigator.pop(dialogContext);
+                  await _executarEnvioImpressora(pdfBytes, nomeImpressora);
+                },
+              ),
+            ],
+          );
+        },
       );
-    }on ConfigException catch(e){
+
+    } on ConfigException catch(e){
       print(e);
-        rethrow;
+      rethrow;
     }
   }
 
-  Future<Uint8List> _gerarPdf(ConsultaDetails c) async {
+  // Isolamento da responsabilidade de comunicação com o hardware
+  Future _executarEnvioImpressora(Uint8List pdfBytes, String? nomeImpressora) async {
+    if (nomeImpressora != null && nomeImpressora.isNotEmpty && nomeImpressora != "Nenhuma") {
+      final printers = await _configService.listarImpressoras();
+
+      final printer = printers.firstWhere(
+            (p) => p.name == nomeImpressora,
+      );
+
+      await Printing.directPrintPdf(
+        printer: printer,
+        onLayout: (format) async => Uint8List.fromList(pdfBytes),
+      );
+
+      return;
+    }
+
+    // fallback de sistema operacional se a impressora local não for resolvida
+    await Printing.layoutPdf(
+      onLayout: (format) async => Uint8List.fromList(pdfBytes),
+    );
+  }
+
+  Future _gerarPdf(ConsultaDetails c) async {
     final pdf = pw.Document();
 
     final bytes = await rootBundle.load('assets/images/logo_unifor_mg.jpg');
@@ -194,7 +239,7 @@ class ImpressaoService {
           return pw.TableRow(
             children: [
               _cell(p.produto.nome),
-              _cell("${p.quantidade.toString()} ${_getUnidadeMedida(p.produto.idTipoProduto)}"),
+              _cell("\({p.quantidade.toString()}\){_getUnidadeMedida(p.produto.idTipoProduto)}"),
             ],
           );
         }),

@@ -21,23 +21,24 @@ import '../../widgets/button_amarelo_widget.dart';
 import '../../widgets/campo_busca_widget.dart';
 import '../../widgets/campo_texto_widget.dart';
 
-class ConsultaPage extends StatefulWidget{
+class ConsultaPage extends StatefulWidget {
   const ConsultaPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => ConsultaPageState();
-
+  State createState() => ConsultaPageState();
 }
 
-class ConsultaPageState extends State<ConsultaPage>{
+class ConsultaPageState extends State {
   final ConsultaService _consultaService = ConsultaService();
 
   late ConsultaDetails consulta;
   bool _dadosCarregando = true;
   final TextEditingController _buscaController = TextEditingController();
-  List<ConsultaDetails> _consultas = [];
-  List<Paciente> _pacientes = [];
-  List<Produto> _produtos = [];
+  
+  // Tipagem estrita exigida pelo compilador
+  List _consultas = [];
+  List _pacientes = [];
+  List _produtos = [];
 
   // variáveis da paginação
   int _paginaAtual = 0;
@@ -48,16 +49,13 @@ class ConsultaPageState extends State<ConsultaPage>{
   final TextEditingController _dataInicialController = TextEditingController();
   final TextEditingController _dataFinalController = TextEditingController();
 
-
-
   @override
-  void initState(){
+  void initState() {
     super.initState();
   }
 
-
   @override
-  void dispose(){
+  void dispose() {
     _buscaController.dispose();
     _dataInicialController.dispose();
     _dataFinalController.dispose();
@@ -77,8 +75,7 @@ class ConsultaPageState extends State<ConsultaPage>{
     }
   }
 
-
-  Future<void> _carregarDados() async {
+  Future _carregarDados() async {
     try {
       final filtro = _montarFiltro();
       final pacientes = await PacienteService().buscarPacientes();
@@ -95,39 +92,41 @@ class ConsultaPageState extends State<ConsultaPage>{
           .getTotalConsultasComFiltro(filtro);
 
       setState(() {
-        _consultas = consultas;
-        _pacientes = pacientes;
-        _produtos = produtos;
+        _consultas = List.from(consultas);
+        _pacientes = List.from(pacientes);
+        _produtos = List.from(produtos);
         _totalRegistros = total;
       });
 
-    }on ConsultaException catch(e){
+    } on ConsultaException catch(e) {
       if (!mounted) return;
       showToast(context, message: e.message, type: ToastType.error);
-    }on PacienteException catch(e){
+    } on PacienteException catch(e) {
       if (!mounted) return;
       showToast(context, message: e.message, type: ToastType.error);
     }
   }
 
-  Future<void> _imprimir(ConsultaDetails consulta) async {
+  Future _imprimir(ConsultaDetails consulta) async {
     try {
-      await ImpressaoService().imprimirConsulta(consulta);
-
+      await ImpressaoService().imprimirConsulta(context, consulta);
+      
+      if (!mounted) return;
       showToast(
-          context, message: "PDF gerado com sucesso!", type: ToastType.success);
+          context, message: "Ação de impressão finalizada!", type: ToastType.success);
     } on ConsultaException catch (e) {
       if (!mounted) return;
       showToast(context, message: e.message, type: ToastType.error);
-    } on ConfigException catch(e){
+    } on ConfigException catch(e) {
       if (!mounted) return;
       showToast(context, message: e.message, type: ToastType.error);
-    }on Exception catch(e){
+    } on Exception catch(e) {
+      if (!mounted) return;
       showToast(context, message: "Erro ao realizar a impressão!", type: ToastType.error);
     }
   }
 
-  Future<void> _removerConsulta(int idConsulta) async {
+  Future _removerConsulta(int idConsulta) async {
     try {
       await _consultaService.deletarConsulta(idConsulta);
 
@@ -141,7 +140,7 @@ class ConsultaPageState extends State<ConsultaPage>{
     }
   }
 
-  Future<void> _selecionarData(BuildContext context, TextEditingController controller) async {
+  Future _selecionarData(BuildContext context, TextEditingController controller) async {
     final DateTime agora = DateTime.now();
     final DateTime dataMinima = agora.subtract(const Duration(days: 365));
     final DateTime dataMaxima = agora;
@@ -156,13 +155,13 @@ class ConsultaPageState extends State<ConsultaPage>{
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: azulUnifor, // cor do cabeçalho e do dia selecionado
-              onPrimary: Colors.white, // cor do texto sobre o primary
-              onSurface: Colors.black, // cor do texto dos dias (números)
+              primary: azulUnifor,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: azulUnifor, // cor dos botões "OK" e "Cancelar"
+                foregroundColor: azulUnifor,
               ),
             ),
           ),
@@ -197,7 +196,7 @@ class ConsultaPageState extends State<ConsultaPage>{
     }
 
     if (_dataFinalController.text.isNotEmpty) {
-      dataFinal = DateFormat('dd/MM/yyyy').parse(_dataFinalController.text).add(Duration(days: 1));
+      dataFinal = DateFormat('dd/MM/yyyy').parse(_dataFinalController.text).add(const Duration(days: 1));
     }
 
     return ConsultaFiltro(
@@ -224,8 +223,8 @@ class ConsultaPageState extends State<ConsultaPage>{
                       final resultado = await showDialog(
                         context: context,
                         builder: (_) => DialogAdicionarConsulta(
-                          pacientes: _pacientes,
-                          produtos: _produtos,
+                          pacientes: List.from(_pacientes),
+                          produtos: List.from(_produtos),
                         ),
                       );
 
@@ -233,7 +232,6 @@ class ConsultaPageState extends State<ConsultaPage>{
                         _carregarDados();
                       }
                     }
-
                 )
               ],
             ),
@@ -244,7 +242,7 @@ class ConsultaPageState extends State<ConsultaPage>{
                 Expanded(
                   child: Column(
                     children: [
-                      SizedBox(height: 60), // espaço do label do CampoTextoWidget
+                      const SizedBox(height: 60),
 
                       CampoBuscaWidget(
                           onChanged: (value) {
@@ -268,7 +266,7 @@ class ConsultaPageState extends State<ConsultaPage>{
                     onTap: () => _selecionarData(context, _dataInicialController),
                     readOnly: true,
                     mostrarBordaCinza: true,
-                    sufixoIcon: Icon(Icons.calendar_month, size: 22),
+                    sufixoIcon: const Icon(Icons.calendar_month, size: 22),
                   ),
                 ),
 
@@ -281,7 +279,7 @@ class ConsultaPageState extends State<ConsultaPage>{
                     controller: _dataFinalController,
                     onTap: () => _selecionarData(context, _dataFinalController),
                     readOnly: true,
-                    sufixoIcon: Icon(Icons.calendar_month, size: 22),
+                    sufixoIcon: const Icon(Icons.calendar_month, size: 22),
                     mostrarBordaCinza: true,
                   ),
                 ),
@@ -291,20 +289,19 @@ class ConsultaPageState extends State<ConsultaPage>{
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 48), // espaço do label
+                    const SizedBox(height: 48),
                     SizedBox(
                       width: 150,
                       height: 50,
                       child: ButtonAmareloWidget(
                         texto: "Limpar Filtros",
-                        //icone: Icons.clear,
                         onPressed: () {
                           _buscaController.clear();
                           _dataInicialController.clear();
                           _dataFinalController.clear();
 
                           _aplicarFiltro();
-                        }, //vai adicionar o produto na consulta,
+                        },
                       ),
                     ),
                   ],
@@ -312,7 +309,7 @@ class ConsultaPageState extends State<ConsultaPage>{
               ],
             ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             if (_dadosCarregando)
               const Center(child: CircularProgressIndicator())
@@ -328,106 +325,116 @@ class ConsultaPageState extends State<ConsultaPage>{
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: DataTable(
-                      showCheckboxColumn: false,
-                      dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-                            (states) {
-                          if (states.contains(WidgetState.hovered)) {
-                            return azulSelecionadoDropDown.withOpacity(0.3);
-                          }
-                          return null;
-                        },
-                      ),
-                      headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.white),
-                      dataRowMinHeight: 60,
-                      dataRowMaxHeight: 60,
-                      horizontalMargin: 24,
-                      columns: const [
-                        DataColumn(label: Text("COD", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                        DataColumn(label: Text("Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                        DataColumn(label: Text("Data", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                        DataColumn(label: Text("Queixa", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                        DataColumn(label: Text("Produtos Utilizados", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                        DataColumn(label: Text("Ações", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                      ],
-                      rows: _consultas.map((consulta) {
-                        return DataRow(
-                          onSelectChanged: (_) {},
-                          cells: [
-                            DataCell(
-                              Text(
-                                consulta.id.toString(),
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                                overflow: TextOverflow.ellipsis,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                          child: DataTable(
+                              showCheckboxColumn: false,
+                              dataRowColor: WidgetStateProperty.resolveWith(
+                                    (states) {
+                                  if (states.contains(WidgetState.hovered)) {
+                                    return azulSelecionadoDropDown.withOpacity(0.3);
+                                  }
+                                  return null;
+                                },
                               ),
-                            ),
+                              headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.white),
+                              dataRowMinHeight: 60,
+                              dataRowMaxHeight: 60,
+                              horizontalMargin: 24,
+                              columns: const [
+                                DataColumn(label: Text("COD", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(label: Text("Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(label: Text("Data", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(label: Text("Queixa", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(label: Text("Produtos Utilizados", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(label: Text("Ações", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                              ],
+                              rows: _consultas.map((consulta) {
+                                return DataRow(
+                                  onSelectChanged: (_) {},
+                                  cells: [
+                                    DataCell(
+                                      Text(
+                                        consulta.id.toString(),
+                                        style: const TextStyle(fontWeight: FontWeight.w600),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
 
-                            DataCell(
-                                Text(
-                                    consulta.paciente.nome,
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                ),
-                            ),
+                                    DataCell(
+                                        Text(
+                                            consulta.paciente.nome,
+                                            style: const TextStyle(fontWeight: FontWeight.w600),
+                                            overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ),
 
-                            DataCell(
-                                Text(consulta.dataFormatada),
-                            ),
+                                    DataCell(
+                                        Text(consulta.dataFormatada),
+                                    ),
 
-                            DataCell(
-                              Text(
-                                  consulta.demandaResumida,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                            ),
+                                    DataCell(
+                                      Text(
+                                          consulta.demandaResumida,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ),
 
-                            DataCell(
-                              Text(
-                                  consulta.medicamentosSimplificados,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                            ),
-                            DataCell(
-                              Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.info_outline, color: Colors.blue),
-                                        onPressed: () async {
-                                          final resultado = await showDialog(
-                                            context: context,
-                                            builder: (_) => DialogAdicionarConsulta(
-                                              consulta: consulta,
-                                              pacientes: _pacientes,
-                                              produtos: _produtos,
+                                    DataCell(
+                                      Text(
+                                          consulta.medicamentosSimplificados,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ),
+                                    DataCell(
+                                      Row(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.info_outline, color: Colors.blue),
+                                                onPressed: () async {
+                                                  final resultado = await showDialog(
+                                                    context: context,
+                                                    builder: (_) => DialogAdicionarConsulta(
+                                                      consulta: consulta,
+                                                      pacientes: List.from(_pacientes),
+                                                      produtos: List.from(_produtos),
+                                                    ),
+                                                  );
+
+                                                  if (resultado == true) {
+                                                    _carregarDados();
+                                                  }
+                                                }
                                             ),
-                                          );
-
-                                          if (resultado == true) {
-                                            _carregarDados();
-                                          }
-                                        }
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.print_outlined, color: Colors.black54),
-                                      onPressed: () => _imprimir(consulta),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                      onPressed: () => _removerConsulta(consulta.id!),
+                                            IconButton(
+                                              icon: const Icon(Icons.print_outlined, color: Colors.black54),
+                                              onPressed: () => _imprimir(consulta),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                              onPressed: () => _removerConsulta(consulta.id!),
+                                            ),
+                                          ],
+                                        ),
                                     ),
                                   ],
-                                ),
+                                );
+                              }).toList(),
                             ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
+                        ),
+                      );
+                    }
+                  ),
                 ),
               ),
 
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
