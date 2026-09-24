@@ -6,6 +6,8 @@ import 'package:printing/printing.dart';
 import 'package:projeto_enfermagem_desktop/exceptions/config_exception.dart';
 import 'package:projeto_enfermagem_desktop/service/config_service.dart';
 import '../DTO/consulta_details.dart';
+import '../theme/theme.dart';
+import '../widgets/button_amarelo_widget.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../model/config.dart';
@@ -27,32 +29,81 @@ class ImpressaoService {
       await showDialog(
         context: context,
         builder: (dialogContext) {
+          final alturaPreview = MediaQuery.of(dialogContext).size.height * 0.75;
+          // Largura na proporção da folha A4, para o diálogo ficar do tamanho da página
+          final larguraPreview = alturaPreview * PdfPageFormat.a4.width / PdfPageFormat.a4.height;
+
           return AlertDialog(
-            title: const Text("Pré-visualização do Relatório Médico"),
-            content: SizedBox(
-              width: MediaQuery.of(dialogContext).size.width * 0.7,
-              height: MediaQuery.of(dialogContext).size.height * 0.8,
-              child: PdfPreview(
-                build: (format) async => Uint8List.fromList(pdfBytes),
-                allowSharing: false,
-                allowPrinting: false, // Desabilita barra de impressão genérica para utilizar regras de configuração
-                canChangePageFormat: false,
-                canChangeOrientation: false,
-                canDebug: false,
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            clipBehavior: Clip.antiAlias, // Recorta o cabeçalho azul nos cantos arredondados
+            titlePadding: EdgeInsets.zero,
+            title: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+              decoration: BoxDecoration(
+                color: azulUnifor,
+                border: Border(bottom: BorderSide(color: amareloUnifor, width: 3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.description_outlined, color: amareloUnifor, size: 30),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Relatório de Consulta", style: textStyleGrayTitle),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Pré-visualização · ${consulta.paciente.nome}",
+                          style: textStyleSubTituloAndMenuItem,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            content: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: larguraPreview,
+                height: alturaPreview,
+                child: PdfPreview(
+                  build: (format) async => Uint8List.fromList(pdfBytes),
+                  maxPageWidth: larguraPreview,
+                  allowSharing: false,
+                  allowPrinting: false, // Desabilita barra de impressão genérica para utilizar regras de configuração
+                  canChangePageFormat: false,
+                  canChangeOrientation: false,
+                  canDebug: false,
+                  scrollViewDecoration: BoxDecoration(color: cinzaFundo),
+                  pdfPreviewPageDecoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
             actions: [
-              TextButton(
+              ButtonAmareloWidget(
+                texto: "Cancelar",
+                isCancelamento: true,
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text("Cancelar", style: TextStyle(color: Colors.red)),
               ),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                icon: const Icon(Icons.print, color: Colors.white),
-                label: const Text("Confirmar e Imprimir", style: TextStyle(color: Colors.white)),
+              ButtonAmareloWidget(
+                texto: "Confirmar e Imprimir",
+                icone: Icons.print,
                 onPressed: () async {
                   Navigator.pop(dialogContext);
                   await _executarEnvioImpressora(pdfBytes, nomeImpressora);
@@ -239,7 +290,7 @@ class ImpressaoService {
           return pw.TableRow(
             children: [
               _cell(p.produto.nome),
-              _cell("\({p.quantidade.toString()}\){_getUnidadeMedida(p.produto.idTipoProduto)}"),
+              _cell("${p.quantidade.toString()} ${_getUnidadeMedida(p.produto.idTipoProduto)}"),
             ],
           );
         }),
