@@ -133,31 +133,34 @@ class _ProdutosPageState extends State<ProdutosPage> {
 
       if (produto.status == 'ativo') {
         await _produtosService.desativarProduto(produto.id!);
-        if (mounted)
+        if (mounted) {
           showToast(
             context,
             message: "Produto desativado!",
             type: ToastType.success,
           );
+        }
       } else {
         await _produtosService.ativarProduto(produto.id!);
-        if (mounted)
+        if (mounted) {
           showToast(
             context,
             message: "Produto ativado com sucesso!",
             type: ToastType.success,
           );
+        }
       }
 
       await _carregarDados();
     } catch (e) {
       setState(() => isLoading = false);
-      if (mounted)
+      if (mounted) {
         showToast(
           context,
           message: "Erro ao alterar status: $e",
           type: ToastType.error,
         );
+      }
     }
   }
 
@@ -208,13 +211,16 @@ class _ProdutosPageState extends State<ProdutosPage> {
                           controller: estoqueController,
                           obrigatorio: true,
                           validator: (value) {
-                            if (value == null || value.trim().isEmpty)
+                            if (value == null || value.trim().isEmpty) {
                               return "Campo obrigatório";
+                            }
                             if (double.tryParse(value.replaceAll(',', '.')) ==
-                                null)
+                                null) {
                               return "Número inválido";
-                            if (double.parse(value.replaceAll(',', '.')) < 0)
+                            }
+                            if (double.parse(value.replaceAll(',', '.')) < 0) {
                               return "Não pode ser negativo";
+                            }
                             return null;
                           },
                         ),

@@ -15,8 +15,6 @@ import '../../DTO/consulta_details.dart';
 import '../../bases/page_base.dart';
 import '../../exceptions/paciente_exception.dart';
 import '../../model/filtros/consulta_filtro.dart';
-import '../../model/paciente.dart';
-import '../../model/produto.dart';
 import '../../service/paciente_service.dart';
 import '../../theme/theme.dart';
 import '../../widgets/button_amarelo_widget.dart';

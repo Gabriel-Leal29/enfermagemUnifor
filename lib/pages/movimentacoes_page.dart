@@ -7,6 +7,8 @@ import '../dao/gerenciador_estoque_dao.dart';
 import '../model/gerenciador_estoque.dart';
 import '../dao/produto_dao.dart';
 import '../model/produto.dart';
+import '../model/filtros/movimentacao_filtro.dart';
+import '../DTO/movimentacao_agrupada.dart';
 
 class MovimentacoesPage extends StatefulWidget {
   const MovimentacoesPage({super.key});
@@ -21,12 +23,16 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
   late final GerenciadorEstoqueDao _estoqueDao;
   late final ProdutoDao _produtoDao;
 
-  List<GerenciadorEstoque> todosOsLancamentos = [];
-  List<GerenciadorEstoque> lancamentosFiltrados = [];
+  List<MovimentacaoAgrupada> _movimentacoes = [];
   Map<int, Produto> produtosMap = {};
 
   bool isLoading = true;
   String situacaoFiltro = 'TODAS';
+
+  // variáveis da paginação
+  int _paginaAtual = 0;
+  final int _tamanhoPagina = 10;
+  int _totalRegistros = 0;
 
   final List<String> opcoesFiltro = ['TODAS', 'ENTRADA', 'SAÍDA', 'CORREÇÕES'];
 
@@ -46,71 +52,50 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
 
   Future<void> _carregarDados() async {
     try {
-      final lancamentosDoBanco = await _estoqueDao.listarTodos();
+      final filtro = _montarFiltro();
       final produtosDoBanco = await _produtoDao.listarTodos();
+
+      // o agrupamento por NFe e a paginação são feitos no banco
+      final movimentacoes = await _estoqueDao.listarAgrupadoPaginadoComFiltro(
+        _tamanhoPagina,
+        _paginaAtual * _tamanhoPagina,
+        filtro,
+      );
+
+      final total = await _estoqueDao.countAgrupadoComFiltro(filtro);
 
       final Map<int, Produto> mapP = {
         for (var p in produtosDoBanco)
           if (p.id != null) p.id!: p,
       };
 
+      if (!mounted) return;
       setState(() {
-        todosOsLancamentos = lancamentosDoBanco;
+        _movimentacoes = movimentacoes;
         produtosMap = mapP;
-      });
-
-      _filtrarLista();
-
-      setState(() {
+        _totalRegistros = total;
         isLoading = false;
       });
     } catch (e) {
       print("Erro ao carregar movimentações: $e");
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
 
-  void _filtrarLista() {
-    String textoDigitado = _buscaController.text.toLowerCase();
-
+  void _aplicarFiltro() {
     setState(() {
-      List<GerenciadorEstoque> filtradosParcial = todosOsLancamentos.where((
-        lancamento,
-      ) {
-        bool matchNfe = lancamento.numeroNfe.toLowerCase().contains(
-          textoDigitado,
-        );
-        bool matchSituacao = true;
-
-        bool isCorrecao = lancamento.numeroNfe.startsWith('000');
-
-        if (situacaoFiltro == 'ENTRADA') {
-          matchSituacao = lancamento.situacao == 'ENTRADA' && !isCorrecao;
-        } else if (situacaoFiltro == 'SAÍDA') {
-          matchSituacao = lancamento.situacao == 'SAIDA' && !isCorrecao;
-        } else if (situacaoFiltro == 'CORREÇÕES') {
-          matchSituacao = isCorrecao;
-        }
-
-        return matchNfe && matchSituacao;
-      }).toList();
-
-      List<GerenciadorEstoque> listaAgrupada = [];
-      Set<String> nfesProcessadas = {};
-
-      for (var lancamento in filtradosParcial) {
-        if (lancamento.numeroNfe.startsWith('000')) {
-          listaAgrupada.add(lancamento);
-        } else {
-          if (!nfesProcessadas.contains(lancamento.numeroNfe)) {
-            listaAgrupada.add(lancamento);
-            nfesProcessadas.add(lancamento.numeroNfe);
-          }
-        }
-      }
-
-      lancamentosFiltrados = listaAgrupada;
+      _paginaAtual = 0;
     });
+
+    _carregarDados();
+  }
+
+  MovimentacaoFiltro _montarFiltro() {
+    return MovimentacaoFiltro(
+      numeroNfe: _buscaController.text,
+      situacao: situacaoFiltro,
+    );
   }
 
   String _formatarData(DateTime data) {
@@ -120,19 +105,20 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
     return "$dia/$mes/$ano";
   }
 
-  void _mostrarDetalhesNfe(
+  Future<void> _mostrarDetalhesNfe(
     BuildContext context,
     GerenciadorEstoque lancamentoClicado,
-  ) {
+  ) async {
     List<GerenciadorEstoque> itensDestaNota = [];
 
     if (lancamentoClicado.numeroNfe.startsWith('000')) {
       itensDestaNota = [lancamentoClicado];
     } else {
-      itensDestaNota = todosOsLancamentos
-          .where((l) => l.numeroNfe == lancamentoClicado.numeroNfe)
-          .toList();
+      // a página só tem uma linha por NFe, então os itens da nota vêm do banco
+      itensDestaNota = await _estoqueDao.listarPorNfe(lancamentoClicado.numeroNfe);
     }
+
+    if (!context.mounted) return;
 
     showDialog(
       context: context,
@@ -233,7 +219,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                       texto: "Pesquisar por NFe",
                       prefixIcon: Icons.search_rounded,
                       controller: _buscaController,
-                      onChanged: (val) => _filtrarLista(),
+                      onChanged: (val) => _aplicarFiltro(),
                     ),
                   ],
                 ),
@@ -250,8 +236,9 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                   onSelected: (selecionado) {
                     setState(() {
                       situacaoFiltro = selecionado;
-                      _filtrarLista();
                     });
+
+                    _aplicarFiltro();
                   },
                 ),
               ),
@@ -262,7 +249,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
 
           if (isLoading)
             const Center(child: CircularProgressIndicator())
-          else if (lancamentosFiltrados.isEmpty)
+          else if (_movimentacoes.isEmpty)
             const Center(
               child: Text(
                 "Nenhuma movimentação encontrada.",
@@ -330,11 +317,12 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                     ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: lancamentosFiltrados.length,
+                      itemCount: _movimentacoes.length,
                       separatorBuilder: (context, index) =>
                           Divider(height: 1, color: Colors.grey.shade200),
                       itemBuilder: (context, index) {
-                        final lancamento = lancamentosFiltrados[index];
+                        final movimentacao = _movimentacoes[index];
+                        final lancamento = movimentacao.lancamento;
                         final bool isCorrecao = lancamento.numeroNfe.startsWith(
                           '000',
                         );
@@ -344,9 +332,7 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                           final produto = produtosMap[lancamento.idProduto];
                           textoProduto = produto?.nome ?? 'Desconhecido';
                         } else {
-                          int qtdItens = todosOsLancamentos
-                              .where((l) => l.numeroNfe == lancamento.numeroNfe)
-                              .length;
+                          final int qtdItens = movimentacao.qtdItens;
                           textoProduto = qtdItens > 1
                               ? '$qtdItens itens agrupados'
                               : '1 item';
@@ -483,6 +469,35 @@ class _MovimentacoesPageState extends State<MovimentacoesPage> {
                 ),
               ),
             ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _paginaAtual > 0
+                    ? () {
+                  setState(() => _paginaAtual--);
+                  _carregarDados();
+                }
+                    : null,
+              ),
+
+              Text("Página ${_paginaAtual + 1}"),
+
+              IconButton(
+                icon: const Icon(Icons.arrow_forward),
+                onPressed: (_paginaAtual + 1) * _tamanhoPagina < _totalRegistros
+                    ? () {
+                  setState(() => _paginaAtual++);
+                  _carregarDados();
+                }
+                    : null,
+              ),
+            ],
+          )
         ],
       ),
     );
