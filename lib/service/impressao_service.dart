@@ -16,6 +16,10 @@ class ImpressaoService {
   final ConfigService _configService = ConfigService();
   Config? dados;
 
+  // estilos base dos textos do relatório
+  static const pw.TextStyle _estiloTexto = pw.TextStyle(fontSize: 16);
+  static final pw.TextStyle _estiloTextoNegrito = _estiloTexto.copyWith(fontWeight: pw.FontWeight.bold);
+
   // Recebe BuildContext para acionar o modal antes da impressão nativa
   Future imprimirConsulta(BuildContext context, ConsultaDetails consulta) async {
     try {
@@ -29,7 +33,7 @@ class ImpressaoService {
       await showDialog(
         context: context,
         builder: (dialogContext) {
-          final alturaPreview = MediaQuery.of(dialogContext).size.height * 0.75;
+          final alturaPreview = MediaQuery.of(dialogContext).size.height * 0.95;
           // Largura na proporção da folha A4, para o diálogo ficar do tamanho da página
           final larguraPreview = alturaPreview * PdfPageFormat.a4.width / PdfPageFormat.a4.height;
 
@@ -154,16 +158,12 @@ class ImpressaoService {
     }
 
     pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            children: [
-              _buildHeader(logoImage),
-              pw.SizedBox(height: 30),
-              _buildConteudo(c),
-            ],
-          );
-        },
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          _buildHeader(logoImage),
+          pw.SizedBox(height: 30),
+          ..._buildConteudo(c),
+        ],
       ),
     );
 
@@ -212,65 +212,73 @@ class ImpressaoService {
     );
   }
 
-  pw.Widget _buildConteudo(ConsultaDetails c) {
-    return pw.Container(
-        width: double.infinity, // 👈 ESSENCIAL
-        child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              "RELATÓRIO DE CONSULTA",
-              style: pw.TextStyle(
-                fontSize: 18,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+  // retorna a lista solta (sem Column) para o MultiPage conseguir quebrar a página entre os itens
+  List<pw.Widget> _buildConteudo(ConsultaDetails c) {
+    return [
+      pw.Text(
+        "RELATÓRIO DE CONSULTA",
+        style: pw.TextStyle(
+          fontSize: 18,
+          fontWeight: pw.FontWeight.bold,
+        ),
+      ),
 
-            pw.SizedBox(height: 20),
+      pw.SizedBox(height: 20),
 
-            pw.Text("Paciente: ${c.paciente.nome}"),
-            pw.Text("Tipo: ${_getTipoPaciente(c.paciente.idTipoPaciente)}"),
-            if(c.paciente.matricula != null)
-              pw.Text("Matrícula: ${c.paciente.matricula}"),
+      _campo("Paciente", c.paciente.nome),
+      _campo("Tipo", _getTipoPaciente(c.paciente.idTipoPaciente)),
+      if(c.paciente.matricula != null && c.paciente.matricula!.isNotEmpty)
+        _campo("Matrícula", "${c.paciente.matricula}"),
 
-            pw.Text("Data: ${c.dataFormatada}"),
+      _campo("Data", c.dataFormatada),
 
-            pw.Text("Responsável: ${c.responsavel ?? "O próprio"}"),
+      _campo("Responsável", c.responsavel ?? "O próprio"),
 
-            pw.SizedBox(height: 20),
+      pw.SizedBox(height: 20),
 
-            pw.Text(
-              "Queixa / Observações:",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.SizedBox(height: 8),
-            if(c.demanda.isNotEmpty)
-              pw.Text(c.demanda),
+      pw.Text(
+        "Queixa / Observações:",
+        style: _estiloTextoNegrito,
+      ),
+      pw.SizedBox(height: 8),
+      if(c.demanda.isNotEmpty)
+        pw.Text(c.demanda, style: _estiloTexto, textAlign: pw.TextAlign.justify),
 
-            if(c.observacao != null)
-              pw.Text("${c.observacao}"),
+      if(c.observacao != null)
+        pw.Text("${c.observacao}", style: _estiloTexto, textAlign: pw.TextAlign.justify),
 
-            if(c.observacao == null && c.demanda.isEmpty)
-              pw.Text("Nenhuma queixa ou observação inserida na consulta"),
+      if(c.observacao == null && c.demanda.isEmpty)
+        pw.Text("Nenhuma queixa ou observação inserida na consulta", style: _estiloTexto),
 
-            pw.SizedBox(height: 20),
+      pw.SizedBox(height: 20),
 
-            pw.Text(
-              "Medicamentos Utilizados:",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
+      pw.Text(
+        "Medicamentos Utilizados:",
+        style: _estiloTextoNegrito,
+      ),
 
-            pw.SizedBox(height: 10),
+      pw.SizedBox(height: 10),
 
-            if (c.produtos.isNotEmpty)
-              _buildTabelaMedicamentos(c)
-            else
-              pw.Text(
-                "Não foi utilizado nenhum medicamento na consulta...",
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-              ),
-          ],
-      )
+      if (c.produtos.isNotEmpty)
+        _buildTabelaMedicamentos(c)
+      else
+        pw.Text(
+          "Não foi utilizado nenhum medicamento na consulta...",
+          style: _estiloTextoNegrito,
+        ),
+    ];
+  }
+
+  // label em negrito e valor normal na mesma linha, ex: "Paciente: Fulano"
+  pw.Widget _campo(String label, String valor) {
+    return pw.RichText(
+      textAlign: pw.TextAlign.justify,
+      text: pw.TextSpan(
+        children: [
+          pw.TextSpan(text: "$label: ", style: _estiloTextoNegrito),
+          pw.TextSpan(text: valor, style: _estiloTexto),
+        ],
+      ),
     );
   }
 
@@ -304,7 +312,7 @@ class ImpressaoService {
       padding: const pw.EdgeInsets.all(8),
       child: pw.Text(
         text,
-        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+        style: _estiloTextoNegrito,
       ),
     );
   }
@@ -312,7 +320,7 @@ class ImpressaoService {
   pw.Widget _cell(String text) {
     return pw.Padding(
       padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(text),
+      child: pw.Text(text, style: _estiloTexto),
     );
   }
 

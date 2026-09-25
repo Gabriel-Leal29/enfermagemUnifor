@@ -65,7 +65,7 @@ class _HomeState extends State<Home>{
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: azulUnifor.withOpacity(0.1),
+            color: azulUnifor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(icone, color: amareloUnifor, size: 22),
@@ -89,6 +89,7 @@ class _HomeState extends State<Home>{
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
         onTap: () => setState(() => _selectedIndex = index),
         borderRadius: BorderRadius.circular(6),
         child: Container(

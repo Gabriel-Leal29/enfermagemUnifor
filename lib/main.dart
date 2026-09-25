@@ -21,8 +21,8 @@ void main() async {
 
   // definindo  tamanho mínimo da tela
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(1500, 800),
-    minimumSize: Size(1500, 700), // TODO: tamanho mínimo da tela, pode variar com o decorrer do projeto
+    size: Size(1450, 800),
+    minimumSize: Size(1450, 700), // TODO: tamanho mínimo da tela, pode variar com o decorrer do projeto
     center: true,
     title: "Enfermagem - UNIFOR",
   );

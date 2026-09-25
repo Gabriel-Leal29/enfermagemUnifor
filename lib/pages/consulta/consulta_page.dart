@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projeto_enfermagem_desktop/dao/produto_dao.dart';
@@ -48,6 +50,9 @@ class ConsultaPageState extends State {
   // filtros
   final TextEditingController _dataInicialController = TextEditingController();
   final TextEditingController _dataFinalController = TextEditingController();
+
+  // abaixo dessa largura a tabela para de encolher e passa a rolar na horizontal
+  static const double _larguraMinimaTabela = 900;
 
   @override
   void initState() {
@@ -206,6 +211,23 @@ class ConsultaPageState extends State {
     );
   }
 
+  Widget _textoCelula(String texto, {String? tooltip, FontWeight? fontWeight}) {
+    final textoWidget = Text(
+      texto,
+      style: TextStyle(fontWeight: fontWeight),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+
+    if (tooltip == null || tooltip.isEmpty) return textoWidget;
+
+    return Tooltip(
+      message: tooltip,
+      waitDuration: const Duration(milliseconds: 400),
+      child: textoWidget,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageBase(
@@ -327,10 +349,11 @@ class ConsultaPageState extends State {
                   borderRadius: BorderRadius.circular(12),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
+                      // colunas flex precisam de largura finita, por isso o SizedBox em vez de só minWidth
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                        child: SizedBox(
+                          width: max(constraints.maxWidth, _larguraMinimaTabela),
                           child: DataTable(
                               showCheckboxColumn: false,
                               dataRowColor: WidgetStateProperty.resolveWith(
@@ -345,32 +368,34 @@ class ConsultaPageState extends State {
                               dataRowMinHeight: 60,
                               dataRowMaxHeight: 60,
                               horizontalMargin: 24,
+                              columnSpacing: 24,
+                              // COD, Data e Ações têm largura fixa; as colunas de texto dividem o resto
+                              // e cortam com "..." quando não cabem
                               columns: const [
-                                DataColumn(label: Text("COD", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                                DataColumn(label: Text("Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                                DataColumn(label: Text("Data", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                                DataColumn(label: Text("Queixa", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                                DataColumn(label: Text("Produtos Utilizados", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                                DataColumn(label: Text("Ações", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(columnWidth: FixedColumnWidth(90), label: Text("COD", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(columnWidth: FlexColumnWidth(), label: Text("Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(columnWidth: FixedColumnWidth(120), label: Text("Data", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(columnWidth: FlexColumnWidth(), label: Text("Queixa", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(columnWidth: FlexColumnWidth(), label: Text("Produtos Utilizados", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                                DataColumn(columnWidth: FixedColumnWidth(190), label: Text("Ações", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
                               ],
                               rows: _consultas.map((consulta) {
                                 return DataRow(
                                   onSelectChanged: (_) {},
                                   cells: [
                                     DataCell(
-                                      Text(
+                                      _textoCelula(
                                         consulta.id.toString(),
-                                        style: const TextStyle(fontWeight: FontWeight.w600),
-                                        overflow: TextOverflow.ellipsis,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
 
                                     DataCell(
-                                        Text(
-                                            consulta.paciente.nome,
-                                            style: const TextStyle(fontWeight: FontWeight.w600),
-                                            overflow: TextOverflow.ellipsis,
-                                        ),
+                                      _textoCelula(
+                                        consulta.paciente.nome,
+                                        tooltip: consulta.paciente.nome,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
 
                                     DataCell(
@@ -378,19 +403,17 @@ class ConsultaPageState extends State {
                                     ),
 
                                     DataCell(
-                                      Text(
-                                          consulta.demandaResumida,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                      _textoCelula(
+                                        consulta.demanda.replaceAll('\n', ' '),
+                                        tooltip: consulta.demanda,
+                                      ),
                                     ),
 
                                     DataCell(
-                                      Text(
-                                          consulta.medicamentosSimplificados,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                      _textoCelula(
+                                        consulta.medicamentosSimplificados,
+                                        tooltip: consulta.produtos.map((p) => p.produto.nome).join(', '),
+                                      ),
                                     ),
                                     DataCell(
                                       Row(

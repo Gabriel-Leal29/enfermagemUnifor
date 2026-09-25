@@ -26,18 +26,9 @@ class ConsultaDetails {
     return DateFormat('dd/MM/yyyy').format(data);
   }
 
-  String limitarTexto(String texto, int limite) {
-    if (texto.length <= limite) return texto;
-    return '${texto.substring(0, limite)}...';
-  }
-
   String get medicamentosSimplificados {
-    final prod = produtos
+    return produtos
         .map((p) => p.produto.nome.split(' ').first)
         .join(', ');
-
-    return limitarTexto(prod, 40);
   }
-
-  String get demandaResumida => limitarTexto(demanda, 25);
 }
