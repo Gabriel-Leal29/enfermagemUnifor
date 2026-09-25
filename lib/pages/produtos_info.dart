@@ -63,7 +63,7 @@ class _ProdutosInfoState extends State<ProdutosInfo> {
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Align(
-          alignment: Alignment.center,
+          alignment: Alignment.topCenter,
           child: Container(
             width: larguraTela * 0.5,
             padding: const EdgeInsets.all(32.0),
